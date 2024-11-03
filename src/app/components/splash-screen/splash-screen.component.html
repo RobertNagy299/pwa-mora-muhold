@@ -1,0 +1,18 @@
+<div class="app-splash-screen" *ngIf="showSplash"
+  [ngStyle]="{ 'zoom' : scale, 'opacity' : opacity }"
+>
+
+  <div class="app-splash-screen-inner"
+  [ngStyle]="{
+    'opacity': innerOpacity,
+    'zoom' : innerScale
+  }"
+  >
+    <div class="app-logo">
+    </div>
+    <div class="app-label">Móra Műhold</div>
+    <div class="app-loader"></div>
+
+  </div>
+
+</div>
