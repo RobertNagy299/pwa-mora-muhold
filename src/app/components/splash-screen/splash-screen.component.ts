@@ -14,6 +14,11 @@ import {NgIf, NgStyle} from "@angular/common";
 })
 
 export class SplashScreenComponent implements OnInit {
+
+  private splashIntervalBeginning = 2000;
+  private splashIntervalEnding = 3000;
+
+
   private randomIntFromInterval = (min:number, max:number) :number => { // min and max included
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
@@ -35,7 +40,7 @@ export class SplashScreenComponent implements OnInit {
       }, 1500)
 
      // this.windowWidth = "-" + window.innerWidth + 'px';
-    }, this.randomIntFromInterval(2000,3000))
+    }, this.randomIntFromInterval(this.splashIntervalBeginning,this.splashIntervalEnding))
 
   }
 }

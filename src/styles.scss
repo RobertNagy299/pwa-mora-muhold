@@ -1,4 +1,47 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+// Define a dark theme
+$dark-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$cyan-palette,
+  ),
+));
+
+// Define a light theme
+$light-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$cyan-palette,
+  ),
+));
+
+.theme-dark {
+  @include mat.all-component-colors($dark-theme);
+}
+
+.theme-light {
+  @include mat.all-component-colors($light-theme);
+}
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+// Apply default theme based on user's preference or fallback to light theme
+html {
+  @include mat.core-theme($light-theme);
+  @include mat.button-theme($light-theme);
+}
+
+// Ensure themes apply correctly when the body class changes
+body.theme-dark {
+  @include mat.core-theme($dark-theme);
+  @include mat.button-theme($dark-theme);
+}
+
+body.theme-light {
+  @include mat.core-theme($light-theme);
+  @include mat.button-theme($light-theme);
+}

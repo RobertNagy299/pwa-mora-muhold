@@ -1,0 +1,59 @@
+@import "../../breakpoints-variables";
+
+@mixin laptop {
+  @media only screen and (max-width: $laptop) {
+    .app-logo {
+      width: 78px;
+      height: 78px;
+    }
+    .app-splash-screen-inner {
+      width: 564px;
+      height: 564px;
+
+    }
+    .app-label {
+      font-size: 2rem;
+    }
+
+    @content;
+  }
+}
+
+
+@mixin tablet {
+
+  @media only screen and (max-width: $tablet) {
+    .app-logo {
+      width: 64px;
+      height: 64px;
+    }
+    .app-splash-screen-inner {
+      width: 480px;
+      height: 480px;
+
+    }
+    .app-label {
+      font-size: 1.5rem;
+    }
+
+    @content;
+  }
+}
+
+@mixin mobile {
+  @media only screen and (max-width: $mobile) {
+    .app-logo {
+      width: 48px;
+      height: 48px;
+    }
+    .app-splash-screen-inner {
+      width: 320px;
+      height: 320px;
+    }
+
+    .app-label{
+      font-size: 1.2rem;
+    }
+    @content;
+  }
+}

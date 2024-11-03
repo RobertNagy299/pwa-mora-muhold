@@ -1,0 +1,9 @@
+
+::ng-deep .mat-slide-toggle-thumb {
+  width: 48px; /* Adjust width as needed */
+  height: 48px; /* Adjust height as needed */
+}
+
+::ng-deep .mdc-switch__icon {
+  transform: scale(1.5); /* Adjust the scale as needed */
+}

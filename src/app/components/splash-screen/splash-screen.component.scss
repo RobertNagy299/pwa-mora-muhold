@@ -1,21 +1,33 @@
+$app-logo-width: 96px;
+$app-logo-height: $app-logo-width;
+$app-label-font-size: 2.5rem;
 
+$app-splash-screen-inner-width: 650px;
+$app-splash-screen-inner-height: $app-splash-screen-inner-width;
+
+$app-splash-screen-width: 100%;
+$app-splash-screen-height: $app-splash-screen-width;
+
+@import "./responsivity";
 
 .app-label {
     color: var(--mat-app-text-color);
-    font-size: 2.5rem;
+    font-size: $app-label-font-size;
     display: flex;
     justify-content: center;
   }
-  
+
   .app-logo {
+
     margin-bottom: 1rem;
     background: url("../../assets/satellite_alt_128dp_E0E3E2FF_FILL0_wght400_GRAD0_opsz48.svg") no-repeat center;
     background-size: contain;
-    height: 96px;
-    width: 96px;
-  
+    height: $app-logo-height;
+    width: $app-logo-width;
+
+
   }
-  
+
   .app-splash-screen-inner {
     display: flex;
     flex-direction: column;
@@ -23,13 +35,14 @@
     align-items: center;
     background: url("../../assets/tube-spinner.svg") no-repeat center;
     background-size: contain;
-    height: 650px;
-    width: 650px;
+    height: $app-splash-screen-inner-height;
+    width: $app-splash-screen-inner-width;
+
     transition: zoom, opacity, 0.5s;
   }
-  
-  
-  
+
+
+
   .app-splash-screen {
     background-color: var(--mat-app-background-color);
     position: fixed;
@@ -40,9 +53,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    height: 100%;
+    width: $app-splash-screen-width;
+    height: $app-splash-screen-height;
     z-index: 1000;
     transition: zoom, 0.5s;
   }
-  
+
+  @include laptop;
+  @include tablet;
+  @include mobile;
