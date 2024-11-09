@@ -29,19 +29,35 @@ $light-theme: mat.define-theme((
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+.sidenav-container {
+  height: 100%;
+}
+
+.sidenav {
+  width: 250px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.active-link {
+  font-weight: bold;
+}
+
+
 // Apply default theme based on user's preference or fallback to light theme
-html {
-  @include mat.core-theme($light-theme);
-  @include mat.button-theme($light-theme);
-}
-
-// Ensure themes apply correctly when the body class changes
-body.theme-dark {
-  @include mat.core-theme($dark-theme);
-  @include mat.button-theme($dark-theme);
-}
-
-body.theme-light {
-  @include mat.core-theme($light-theme);
-  @include mat.button-theme($light-theme);
-}
+//
+//html {
+//  @include mat.all-component-colors($dark-theme);
+//}
+//
+//// Ensure themes apply correctly when the body class changes
+//body.theme-dark {
+//  @include mat.all-component-colors($dark-theme);
+//}
+//
+//body.theme-light {
+//  @include mat.all-component-colors($light-theme);
+//
+//}

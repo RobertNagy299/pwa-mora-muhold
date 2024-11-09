@@ -15,8 +15,8 @@ import {NgIf, NgStyle} from "@angular/common";
 
 export class SplashScreenComponent implements OnInit {
 
-  private splashIntervalBeginning = 2000;
-  private splashIntervalEnding = 3000;
+  private splashIntervalBeginning = 2000; //original: 2000
+  private splashIntervalEnding = 3000;// original: 3000
 
 
   private randomIntFromInterval = (min:number, max:number) :number => { // min and max included

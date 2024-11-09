@@ -7,3 +7,11 @@
 ::ng-deep .mdc-switch__icon {
   transform: scale(1.5); /* Adjust the scale as needed */
 }
+
+mat-drawer {
+  width: fit-content;
+}
+.navbar-icon {
+  transform: scale(1.6);
+  margin-right: 32px;
+}

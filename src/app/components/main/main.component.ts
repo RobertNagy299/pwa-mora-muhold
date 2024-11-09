@@ -1,11 +1,26 @@
 import {AfterViewInit, Component, ElementRef, Inject, OnInit, PLATFORM_ID, ViewChild} from '@angular/core';
-import {MatSidenavContainer, MatSidenavContent} from '@angular/material/sidenav';
+import {
+  MatDrawer,
+  MatDrawerContainer,
+  MatSidenav,
+  MatSidenavContainer,
+  MatSidenavContent, MatSidenavModule
+} from '@angular/material/sidenav';
 import {MatToolbar} from '@angular/material/toolbar';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 
-import {ThemeService} from '../../theme.service';
+
+import {MatList, MatListItem, MatNavList} from '@angular/material/list';
+import {MatDivider} from '@angular/material/divider';
+import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
+
+import {MatIcon} from '@angular/material/icon';
+import {MatButton, MatIconButton} from '@angular/material/button';
+import {MatLine} from '@angular/material/core';
+import {ThemeService} from '../../services/theme.service';
 import {isPlatformBrowser} from '@angular/common';
+import {MatMenu, MatMenuItem} from '@angular/material/menu';
 
 @Component({
   selector: 'app-main',
@@ -13,9 +28,26 @@ import {isPlatformBrowser} from '@angular/common';
   imports: [
     MatSidenavContainer,
     MatSidenavContent,
+    MatSidenavModule,
     MatToolbar,
     MatSlideToggle,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatDrawerContainer,
+    MatList,
+    MatListItem,
+    MatDivider,
+    RouterOutlet,
+    MatDrawer,
+    RouterLink,
+    MatSidenav,
+    MatIcon,
+    MatIconButton,
+    MatLine,
+    MatNavList,
+    RouterLinkActive,
+    MatMenu,
+    MatMenuItem,
+    MatButton
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
