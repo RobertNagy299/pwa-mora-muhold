@@ -72,7 +72,7 @@ export class MainComponent implements OnInit, AfterViewInit{
   }
 
   updateTheme(isDark: boolean) {
-    if (isPlatformBrowser(this.platformId)) {
+    if (isPlatformBrowser(this.platformId) && document !== undefined && typeof document !== 'undefined') {
       const body = document.body;
       if (isDark) {
         body.classList.add('theme-dark');

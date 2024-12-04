@@ -1,1 +1,7 @@
 <p>voltage-chart works!</p>
+@for (voltage of arrayOfVoltages; track $index) {
+    <div>
+      time: {{voltage.time}},
+      voltage: {{voltage.voltage}}
+    </div>
+}
