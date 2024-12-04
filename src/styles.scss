@@ -20,10 +20,14 @@ $light-theme: mat.define-theme((
 
 .theme-dark {
   @include mat.all-component-colors($dark-theme);
+  --error-color: #f44336; /* Red for dark theme error */
+  --success-color: #4caf50; /* Green for dark theme success */
 }
 
 .theme-light {
   @include mat.all-component-colors($light-theme);
+  --error-color: #d32f2f; /* Dark red for light theme error */
+  --success-color: #388e3c; /* Dark green for light theme success */
 }
 
 html, body { height: 100%; }
@@ -45,7 +49,73 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   font-weight: bold;
 }
 
+.success-message {
+  color: var(--success-color); /* Use the success color from the theme */
+  margin-top: 10px;
+}
 
+.error-message {
+  color: var(--error-color); /* Use the error color from the theme */
+  margin-top: 10px;
+}
+
+
+//@use '@angular/material' as mat;
+//
+//@include mat.core();
+//
+//// Define a dark theme
+//$dark-theme: mat.define-theme((
+//  color: (
+//    theme-type: dark,
+//    primary: mat.$cyan-palette,
+//  ),
+//));
+//
+//// Define a light theme
+//$light-theme: mat.define-theme((
+//  color: (
+//    theme-type: light,
+//    primary: mat.$cyan-palette,
+//  ),
+//));
+//
+//.theme-dark {
+//  @include mat.all-component-colors($dark-theme);
+//}
+//
+//.theme-light {
+//  @include mat.all-component-colors($light-theme);
+//}
+//
+//html, body { height: 100%; }
+//body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+//
+//.sidenav-container {
+//  height: 100%;
+//}
+//
+//.sidenav {
+//  width: 250px;
+//}
+//
+//.spacer {
+//  flex: 1 1 auto;
+//}
+//
+//.active-link {
+//  font-weight: bold;
+//}
+//
+//.success-message {
+//  color: lightgreen;
+//  margin-top: 10px;
+//}
+//
+//.error-message {
+//  color: red;
+//  margin-top: 10px;
+//}
 // Apply default theme based on user's preference or fallback to light theme
 //
 //html {

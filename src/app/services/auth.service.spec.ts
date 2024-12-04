@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { VoltageChartService } from './voltage-chart.service';
+import { AuthService } from './auth.service';
 
-describe('VoltageChartService', () => {
-  let service: VoltageChartService;
+describe('AuthService', () => {
+  let service: AuthService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(VoltageChartService);
+    service = TestBed.inject(AuthService);
   });
 
   it('should be created', () => {

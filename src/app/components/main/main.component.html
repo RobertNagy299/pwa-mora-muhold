@@ -32,6 +32,21 @@
           Temperature
         </button>
       </mat-list-item>
+      <mat-divider [vertical]="true" role="separator" style="height: calc(100vh - 324px); border-right-style: none;"></mat-divider>
+      <mat-list-item class="bottom-nav-link" style="margin-top: auto;">
+        <button class="button-in-sidenav" mat-button routerLink="/login" routerLinkActive="active-link">
+          <mat-icon>login</mat-icon>
+          Log in
+        </button>
+      </mat-list-item>
+      <mat-list-item class="bottom-nav-link">
+        <button class="button-in-sidenav" mat-button routerLink="/registration" routerLinkActive="active-link">
+          <mat-icon>
+            app_registration
+          </mat-icon>
+          Register
+        </button>
+      </mat-list-item>
     </mat-nav-list>
   </mat-drawer>
   <mat-drawer-content>

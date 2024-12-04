@@ -1,0 +1,25 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+
+  mat-card {
+    width: 400px;
+    padding-top: 48px;
+    padding-bottom: 48px;
+    margin-top: -64px;
+  }
+  .form-title{
+    margin-bottom: 24px;
+  }
+  form {
+    height:fit-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+
+}
