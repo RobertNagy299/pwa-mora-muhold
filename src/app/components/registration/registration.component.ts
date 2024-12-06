@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { ReactiveFormsModule } from '@angular/forms';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-registration',
@@ -28,7 +29,8 @@ export class RegistrationComponent {
   errorMessage: string | null = null;
   submitted: boolean = false;
 
-  constructor(private fb: FormBuilder, private authService: AuthService) {
+
+  constructor(private router: Router,private fb: FormBuilder, private authService: AuthService) {
 
     this.registerForm = this.fb.group({
       username: ['', Validators.required],
@@ -41,7 +43,12 @@ export class RegistrationComponent {
     this.registerForm.markAsPristine();
 
   }
-
+  // ngOnInit() {
+  //   const user = this.authService.currentUser$;
+  //   if(user){
+  //     this.router.navigate(['/home']);
+  //   }
+  // }
   onSubmit() {
     this.submitted = true; // Mark the form as submitted
     if (this.registerForm.valid) {
@@ -64,6 +71,11 @@ export class RegistrationComponent {
             }
           });
           this.submitted = true; // Reset the submitted flag after successful registration
+          setTimeout(() => {
+            this.authService.login(email, password).subscribe(() => {
+              this.router.navigate(['/profile']);
+            })
+          },350);
         },
         (error) => {
           this.errorMessage = 'Error registering user: ' + error.message;

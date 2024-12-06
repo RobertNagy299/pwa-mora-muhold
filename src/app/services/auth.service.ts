@@ -1,13 +1,11 @@
 import { Injectable } from '@angular/core';
-import {Firestore, doc, setDoc, getFirestore, getDoc} from '@angular/fire/firestore';
+import {Firestore, doc, getDoc, setDoc, getFirestore} from '@angular/fire/firestore';
 import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  Auth,
-  signInWithEmailAndPassword
+  Auth, getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+  signOut, createUserWithEmailAndPassword, updatePassword, reauthenticateWithCredential, EmailAuthProvider
 } from '@angular/fire/auth';
-import {BehaviorSubject, from, Observable, switchMap} from 'rxjs';
+import { BehaviorSubject, from, Observable, switchMap } from 'rxjs';
+import { User } from '../interfaces/User';
 
 @Injectable({
   providedIn: 'root'
@@ -17,41 +15,67 @@ export class AuthService {
   private roleSubject = new BehaviorSubject<string | null>(null);
   public role$ = this.roleSubject.asObservable();
 
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+
+  private authStateSubject = new BehaviorSubject<boolean>(false);
+  public authState$ = this.authStateSubject.asObservable();
+
   constructor(private firestore: Firestore, private auth: Auth) {
     this.auth = getAuth();
     this.firestore = getFirestore();
     this.initializeAuthStateListener();
   }
 
+  getUserData(): Observable<User | null> {
+    return this.currentUser$;
+  }
+
   private initializeAuthStateListener(): void {
     onAuthStateChanged(this.auth, async (user) => {
+      this.authStateSubject.next(!!user); // Emit whether the user is logged in or not
       if (user) {
         try {
           const userDoc = await getDoc(doc(this.firestore, 'users', user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            this.roleSubject.next(userData ? userData['role'] : null);
+            this.currentUserSubject.next(userData as User); // Emit user data if logged in
           } else {
-            this.roleSubject.next(null);
+            this.currentUserSubject.next(null); // If no user data found
           }
         } catch (error) {
-          console.error('Error fetching user role:', error);
-          this.roleSubject.next(null);
+          console.error('Error fetching user data:', error);
+          this.currentUserSubject.next(null); // On error, emit null
         }
       } else {
-        this.roleSubject.next(null);
+        this.currentUserSubject.next(null); // If no user is logged in, emit null
       }
     });
   }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    const user = this.auth.currentUser;
+    if (user && user.email) {
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      return from(reauthenticateWithCredential(user, credential).then(() => {
+        return updatePassword(user, newPassword);
+      }));
+    } else {
+      throw new Error('User not authenticated');
+    }
+  }
+
 
   login(email: string, password: string): Observable<any> {
     return from(signInWithEmailAndPassword(this.auth, email, password));
   }
 
-  register(username: string, email: string, password: string) {
-    // Create user with email and password
+  logout(): Observable<void> {
+    return from(signOut(this.auth));
+  }
+
+  register(username: string, email: string, password: string): Observable<void> {
     return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
-      // After creating the user, save additional user information in Firestore
       switchMap(({ user }) => {
         const userDocRef = doc(this.firestore, `users/${user.uid}`);
         return from(setDoc(userDocRef, {

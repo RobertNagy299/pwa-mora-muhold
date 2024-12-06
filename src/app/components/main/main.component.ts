@@ -13,14 +13,16 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
 
 import {MatList, MatListItem, MatNavList} from '@angular/material/list';
 import {MatDivider} from '@angular/material/divider';
-import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
+import {Router, RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
 
 import {MatIcon} from '@angular/material/icon';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatLine} from '@angular/material/core';
 import {ThemeService} from '../../services/theme.service';
-import {isPlatformBrowser} from '@angular/common';
+import {isPlatformBrowser, NgIf} from '@angular/common';
 import {MatMenu, MatMenuItem} from '@angular/material/menu';
+import {AuthService} from '../../services/auth.service';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-main',
@@ -47,7 +49,8 @@ import {MatMenu, MatMenuItem} from '@angular/material/menu';
     RouterLinkActive,
     MatMenu,
     MatMenuItem,
-    MatButton
+    MatButton,
+    NgIf
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
@@ -55,10 +58,14 @@ import {MatMenu, MatMenuItem} from '@angular/material/menu';
 export class MainComponent implements OnInit, AfterViewInit{
 
   switchTheme = new FormControl(false);
+  isLoggedIn: boolean = false;
 
-  constructor(private themeService: ThemeService, @Inject(PLATFORM_ID) private platformId: Object) {}
+  constructor(private router: Router ,private snackBar: MatSnackBar,private authService: AuthService ,private themeService: ThemeService, @Inject(PLATFORM_ID) private platformId: Object) {}
 
   ngOnInit() {
+    this.authService.authState$.subscribe(isLoggedIn => {
+      this.isLoggedIn = isLoggedIn;
+    });
     this.themeService.isDarkTheme.subscribe((isDark) => {
       this.switchTheme.setValue(isDark, { emitEvent: false });
       this.updateTheme(isDark);
@@ -70,7 +77,18 @@ export class MainComponent implements OnInit, AfterViewInit{
       }
     });
   }
-
+  logout(): void {
+    this.authService.logout().subscribe(() => {
+      this.snackBar.open('Logged out successfully!', 'Close', {
+        duration: 3000,
+        panelClass: ['success-snackbar']
+      });
+      // Optionally, navigate to login page or home page
+       this.router.navigate(['/home']).catch(err => {
+         console.log("error redirecting: " + err);
+       });
+    });
+  }
   updateTheme(isDark: boolean) {
     if (isPlatformBrowser(this.platformId) && document !== undefined && typeof document !== 'undefined') {
       const body = document.body;
@@ -100,6 +118,7 @@ export class MainComponent implements OnInit, AfterViewInit{
       this.element.nativeElement.querySelector('.mdc-switch__icon--off').firstChild.setAttribute('d', this.sun);
     }
   }
+
 
 
 }
