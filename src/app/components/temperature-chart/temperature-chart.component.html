@@ -1,1 +1,7 @@
-<p>temperature-chart works!</p>
+<div class="chart-container">
+  <h1>Temperature readings</h1>
+  <button class="orange" mat-button mat-flat-button  *ngIf="isLoggedIn" (click)="downloadTemperatureData()">
+    JSON <mat-icon>download</mat-icon>
+  </button>
+  <canvas class="chart" id="realtimeTemperatureChart"></canvas>
+</div>

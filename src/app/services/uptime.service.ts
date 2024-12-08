@@ -1,6 +1,7 @@
 import {inject, Injectable} from '@angular/core';
 
 import { Database, ref, set, get } from '@angular/fire/database';
+import {Subject} from 'rxjs';
 
 
 @Injectable({
@@ -10,6 +11,8 @@ import { Database, ref, set, get } from '@angular/fire/database';
 export class UptimeService {
 
   private db: Database = inject(Database);
+  private resetCounterSubject = new Subject<void>();
+
 
   constructor() {}
 
@@ -17,12 +20,27 @@ export class UptimeService {
     localStorage.setItem('uptime', seconds.toString());
   }
   // Save the counter value in Realtime Database
-  public saveCounterValue(seconds: number): void {
+  public async saveCounterValue(seconds: number): Promise<void> {
     const counterRef = ref(this.db, 'counter');  // The path to store the counter value
-    set(counterRef, seconds).catch(error => {
-      console.log("Error saving uptime to firebase realtime database: " + error);
-    });  // Save the new value to the 'counter' key
+    try {
+      await set(counterRef, seconds);  // Save the new value to the 'counter' key
+    } catch (error) {
+      console.log("Error saving uptime to Firebase Realtime Database: " + error);
+    }
   }
+
+  // Reset counter
+  public resetUptimeCounter(): void {
+    this.resetCounterSubject.next();
+    this.saveCounterValue(0);
+  }
+
+  // Get the reset counter observable
+  get resetCounter$() {
+    return this.resetCounterSubject.asObservable();
+  }
+
+
 
   // Get the counter value from Realtime Database
   public async getCounterValue(): Promise<number> {
@@ -37,6 +55,7 @@ export class UptimeService {
         return parseInt(localdata);
       }
       console.log("Counter doesn't exist!");
+
       return 0; // Return 0 if no counter value exists
     }
   }

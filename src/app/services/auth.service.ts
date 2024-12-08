@@ -1,19 +1,20 @@
 import { Injectable } from '@angular/core';
-import {Firestore, doc, getDoc, setDoc, getFirestore} from '@angular/fire/firestore';
+import {Firestore, doc, getDoc, setDoc, getFirestore, deleteDoc} from '@angular/fire/firestore';
 import {
   Auth, getAuth, onAuthStateChanged, signInWithEmailAndPassword,
   signOut, createUserWithEmailAndPassword, updatePassword, reauthenticateWithCredential, EmailAuthProvider
 } from '@angular/fire/auth';
 import { BehaviorSubject, from, Observable, switchMap } from 'rxjs';
 import { User } from '../interfaces/User';
+import {Router} from '@angular/router';
+import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  private roleSubject = new BehaviorSubject<string | null>(null);
-  public role$ = this.roleSubject.asObservable();
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -21,7 +22,7 @@ export class AuthService {
   private authStateSubject = new BehaviorSubject<boolean>(false);
   public authState$ = this.authStateSubject.asObservable();
 
-  constructor(private firestore: Firestore, private auth: Auth) {
+  constructor(private firestore: Firestore, private auth: Auth, private router: Router) {
     this.auth = getAuth();
     this.firestore = getFirestore();
     this.initializeAuthStateListener();
@@ -85,5 +86,23 @@ export class AuthService {
         }));
       })
     );
+  }
+
+  deleteUser(email: string, password: string): Observable<void> {
+    const user = this.auth.currentUser;
+    if (user) {
+      const credential = EmailAuthProvider.credential(email, password);
+      return from(
+        reauthenticateWithCredential(user, credential).then(async () => {
+          const userDocRef = doc(this.firestore, `users/${user.uid}`);
+          await deleteDoc(userDocRef);
+          this.logout().pipe(untilDestroyed(this)).subscribe(() => {
+            this.router.navigate(['/home']);
+          });
+        })
+      );
+    } else {
+      throw new Error('User not authenticated');
+    }
   }
 }

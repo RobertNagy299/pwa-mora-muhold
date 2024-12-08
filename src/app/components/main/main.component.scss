@@ -1,3 +1,4 @@
+@import './responsivity';
 
 ::ng-deep .mat-slide-toggle-thumb {
   width: 48px; /* Adjust width as needed */
@@ -21,3 +22,32 @@ mat-nav-list {
   flex-direction: column;
 
 }
+
+.navbar {
+  z-index: 999;
+  position: sticky;
+  top: 0;
+  bottom: 0;
+}
+
+/* Styles for the fixed sidenav */
+.drawer-container {
+  height: fit-content;
+}
+
+.sidenav {
+  position: fixed;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  width: 168px; /* Adjust the width as needed */
+}
+
+.sidenav-sticky {
+  position: fixed;
+  top: 64px; /* Height of the toolbar */
+  height: calc(100vh - 80px);
+  overflow: auto;
+}
+
+@include mobile;

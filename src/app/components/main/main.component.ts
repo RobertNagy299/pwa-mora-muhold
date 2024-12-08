@@ -120,5 +120,5 @@ export class MainComponent implements OnInit, AfterViewInit{
   }
 
 
-
+  protected readonly window = window;
 }

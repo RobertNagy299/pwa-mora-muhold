@@ -1,0 +1,12 @@
+@import '../../breakpoints-variables';
+
+@mixin mobile {
+  @media only screen and (max-width: $mobile) {
+    .satellite-container {
+      max-width: 180px;
+      max-height: 180px;
+    }
+
+    @content;
+  }
+}

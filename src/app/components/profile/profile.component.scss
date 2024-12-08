@@ -1,6 +1,7 @@
 .profile-card {
   max-width: 400px;
   margin: 20px auto;
+  padding: 24px 12px;
 }
 
 .full-width {
@@ -20,3 +21,39 @@
   margin-top: 24px;
 }
 
+.delete-button {
+  font-weight: bold;
+  color: var(--danger-color);
+  margin-bottom: 10px;
+}
+
+.admin-delete-uptime-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+}
+.info {
+  font-weight: normal ;
+  font-size: 0.8rem;
+  color: var(--warning-color);
+}
+
+mat-card-title {
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: center;
+  gap:4px;
+}
+
+
+.panel-classifier-icon {
+  position:relative;
+  margin-bottom: -46px;
+  top:0;
+  left:0;
+  font-size: 52px;
+  width: 52px;
+  height: 52px;
+}

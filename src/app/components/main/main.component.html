@@ -1,19 +1,18 @@
-<mat-toolbar color="primary">
+<mat-toolbar class="navbar" color="primary">
   <button (click)="drawer.toggle()" mat-icon-button>
     <mat-icon>menu</mat-icon>
   </button>
-  <span>Móra Satellite</span>
+  <span class="main-brand-title">Móra Satellite</span>
   <span class="spacer"></span>
-  <button *ngIf="isLoggedIn" routerLink="/profile" mat-icon-button>
+  <button class="profile-button" *ngIf="isLoggedIn" routerLink="/profile" mat-icon-button>
     <mat-icon class="navbar-icon">account_circle</mat-icon>
   </button>
   <mat-slide-toggle [formControl]="switchTheme" #darkModeSwitch></mat-slide-toggle>
 </mat-toolbar>
 
-<mat-drawer-container>
-
-  <mat-drawer #drawer mode="over" opened="false" >
-    <mat-nav-list>
+<mat-drawer-container class="drawer-container">
+  <mat-drawer #drawer mode="over" opened="false" class="sidenav">
+    <mat-nav-list class="sidenav-sticky">
       <mat-list-item>
         <button class="button-in-sidenav" mat-button routerLink="/home" routerLinkActive="active-link">
           <mat-icon>dashboard</mat-icon>
@@ -32,23 +31,20 @@
           Temperature
         </button>
       </mat-list-item>
-      <mat-divider [vertical]="true" role="separator" style="height: calc(100vh - 324px); border-right-style: none;"></mat-divider>
-      <mat-list-item *ngIf="!isLoggedIn"  class="bottom-nav-link" style="margin-top: auto;">
+      <mat-divider [vertical]="true" role="separator" style="height: calc(100vh - 304px); border-right-style: none;"></mat-divider>
+      <mat-list-item *ngIf="!isLoggedIn" class="bottom-nav-link" style="margin-top: auto;">
         <button class="button-in-sidenav" mat-button routerLink="/login" routerLinkActive="active-link">
           <mat-icon>login</mat-icon>
           Log in
         </button>
       </mat-list-item>
-      <mat-list-item *ngIf="!isLoggedIn"  class="bottom-nav-link">
+      <mat-list-item *ngIf="!isLoggedIn" class="bottom-nav-link">
         <button class="button-in-sidenav" mat-button routerLink="/registration" routerLinkActive="active-link">
-          <mat-icon>
-            app_registration
-          </mat-icon>
+          <mat-icon>app_registration</mat-icon>
           Register
         </button>
       </mat-list-item>
-
-      <mat-list-item *ngIf="isLoggedIn"  class="bottom-nav-link" style="margin-top: 50px;">
+      <mat-list-item *ngIf="isLoggedIn" class="bottom-nav-link" style="margin-top: 50px;">
         <button class="button-in-sidenav" mat-button (click)="logout()">
           <mat-icon>logout</mat-icon>
           Log out
@@ -65,33 +61,69 @@
 
 
 
-<!--<mat-sidenav-container>-->
-<!--  <mat-sidenav #sidenav mode="over">-->
-<!--    Sidenav content-->
-<!--    <mat-nav-list>-->
-<!--      <button mat-icon-button (click)="sidenav.close()" class="close-button">-->
-<!--        <mat-icon>close</mat-icon>-->
-<!--      </button>-->
-<!--      <a mat-list-item routerLink="/home" routerLinkActive="active-link">-->
-<!--        <mat-icon mat-list-icon>home</mat-icon>-->
-<!--        <span mat-line>Home</span>-->
-<!--      </a>-->
-<!--      <a mat-list-item routerLink="/voltage" routerLinkActive="active-link">-->
-<!--        <mat-icon mat-list-icon>bolt</mat-icon>-->
-<!--        <span mat-line>Voltage</span>-->
-<!--      </a>-->
-<!--      <a mat-list-item routerLink="/temperature" routerLinkActive="active-link">-->
-<!--        <mat-icon mat-list-icon>thermostat</mat-icon>-->
-<!--        <span mat-line>Temperature</span>-->
-<!--      </a>-->
+<!-- my version, functional -->
+<!--<mat-toolbar class="navbar" color="primary">-->
+<!--  <button (click)="drawer.toggle()" mat-icon-button>-->
+<!--    <mat-icon>menu</mat-icon>-->
+<!--  </button>-->
+<!--  <span>Móra Satellite</span>-->
+<!--  <span class="spacer"></span>-->
+<!--  <button *ngIf="isLoggedIn" routerLink="/profile" mat-icon-button>-->
+<!--    <mat-icon class="navbar-icon">account_circle</mat-icon>-->
+<!--  </button>-->
+<!--  <mat-slide-toggle [formControl]="switchTheme" #darkModeSwitch></mat-slide-toggle>-->
+<!--</mat-toolbar>-->
+
+<!--<mat-drawer-container >-->
+
+<!--  <mat-drawer   #drawer mode="over" opened="false" >-->
+<!--    <mat-nav-list class="sidenav-sticky">-->
+
+<!--      <mat-list-item>-->
+<!--        <button class="button-in-sidenav" mat-button routerLink="/home" routerLinkActive="active-link">-->
+<!--          <mat-icon>dashboard</mat-icon>-->
+<!--          Dashboard-->
+<!--        </button>-->
+<!--      </mat-list-item>-->
+<!--      <mat-list-item>-->
+<!--        <button class="button-in-sidenav" mat-button routerLink="/voltage" routerLinkActive="active-link">-->
+<!--          <mat-icon>bolt</mat-icon>-->
+<!--          Voltage-->
+<!--        </button>-->
+<!--      </mat-list-item>-->
+<!--      <mat-list-item>-->
+<!--        <button class="button-in-sidenav" mat-button routerLink="/temperature" routerLinkActive="active-link">-->
+<!--          <mat-icon>thermostat</mat-icon>-->
+<!--          Temperature-->
+<!--        </button>-->
+<!--      </mat-list-item>-->
+<!--      <mat-divider [vertical]="true" role="separator" style="height: calc(100vh - 324px); border-right-style: none;"></mat-divider>-->
+<!--      <mat-list-item *ngIf="!isLoggedIn"  class="bottom-nav-link" style="margin-top: auto;">-->
+<!--        <button class="button-in-sidenav" mat-button routerLink="/login" routerLinkActive="active-link">-->
+<!--          <mat-icon>login</mat-icon>-->
+<!--          Log in-->
+<!--        </button>-->
+<!--      </mat-list-item>-->
+<!--      <mat-list-item *ngIf="!isLoggedIn"  class="bottom-nav-link">-->
+<!--        <button class="button-in-sidenav" mat-button routerLink="/registration" routerLinkActive="active-link">-->
+<!--          <mat-icon>-->
+<!--            app_registration-->
+<!--          </mat-icon>-->
+<!--          Register-->
+<!--        </button>-->
+<!--      </mat-list-item>-->
+
+<!--      <mat-list-item *ngIf="isLoggedIn"  class="bottom-nav-link" style="margin-top: 50px;">-->
+<!--        <button class="button-in-sidenav" mat-button (click)="logout()">-->
+<!--          <mat-icon>logout</mat-icon>-->
+<!--          Log out-->
+<!--        </button>-->
+<!--      </mat-list-item>-->
 <!--    </mat-nav-list>-->
-
-
-<!--  </mat-sidenav>-->
-<!--  <mat-sidenav-content>-->
-<!--    <app-navbar></app-navbar>-->
-
-<!--  </mat-sidenav-content>-->
-<!--</mat-sidenav-container>-->
-
-
+<!--  </mat-drawer>-->
+<!--  <mat-drawer-content>-->
+<!--    <div style="text-align: center; min-height: calc(100vh - 64px);">-->
+<!--      <router-outlet></router-outlet>-->
+<!--    </div>-->
+<!--  </mat-drawer-content>-->
+<!--</mat-drawer-container>-->

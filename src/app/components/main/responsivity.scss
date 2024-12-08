@@ -1,0 +1,30 @@
+@import '../../breakpoints-variables';
+
+@mixin laptop {
+  @media only screen and (max-width: $laptop) {
+
+    @content;
+  }
+}
+
+
+@mixin tablet {
+
+  @media only screen and (max-width: $tablet) {
+
+    @content;
+  }
+}
+
+@mixin mobile {
+  @media only screen and (max-width: $mobile) {
+
+    .profile-button {
+      margin-right: 4px;
+    }
+    .main-brand-title {
+      display: none;
+    }
+    @content;
+  }
+}

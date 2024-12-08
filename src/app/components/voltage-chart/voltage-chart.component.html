@@ -1,7 +1,7 @@
-<p>voltage-chart works!</p>
-@for (voltage of arrayOfVoltages; track $index) {
-    <div>
-      time: {{voltage.time}},
-      voltage: {{voltage.voltage}}
-    </div>
-}
+<div class="chart-container">
+  <h1>Voltage readings</h1>
+  <button mat-button mat-flat-button  *ngIf="isLoggedIn" (click)="downloadVoltageData()">
+    JSON <mat-icon>download</mat-icon>
+  </button>
+  <canvas class="chart"  id="realtimeChart"></canvas>
+</div>

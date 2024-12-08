@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { ReactiveFormsModule } from '@angular/forms';
 import {Router} from '@angular/router';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-registration',
@@ -23,11 +24,12 @@ import {Router} from '@angular/router';
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.scss']
 })
-export class RegistrationComponent {
+export class RegistrationComponent implements OnInit, OnDestroy {
   protected registerForm: FormGroup;
   successMessage: string | null = null;
   errorMessage: string | null = null;
   submitted: boolean = false;
+  private authSubscription: Subscription | null = null;
 
 
   constructor(private router: Router,private fb: FormBuilder, private authService: AuthService) {
@@ -43,12 +45,15 @@ export class RegistrationComponent {
     this.registerForm.markAsPristine();
 
   }
-  // ngOnInit() {
-  //   const user = this.authService.currentUser$;
-  //   if(user){
-  //     this.router.navigate(['/home']);
-  //   }
-  // }
+  ngOnInit() {
+    this.authSubscription = this.authService.getUserData().subscribe(user => {
+      if(user !== null && user !== undefined) {
+        this.router.navigate(['/home']).catch(err => {
+          console.log(err);
+        });
+      }
+    });
+  }
   onSubmit() {
     this.submitted = true; // Mark the form as submitted
     if (this.registerForm.valid) {
@@ -71,11 +76,7 @@ export class RegistrationComponent {
             }
           });
           this.submitted = true; // Reset the submitted flag after successful registration
-          setTimeout(() => {
-            this.authService.login(email, password).subscribe(() => {
-              this.router.navigate(['/profile']);
-            })
-          },350);
+
         },
         (error) => {
           this.errorMessage = 'Error registering user: ' + error.message;
@@ -98,5 +99,11 @@ export class RegistrationComponent {
         matchingControl.setErrors(null);
       }
     };
+  }
+
+  ngOnDestroy() {
+    if(this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
   }
 }

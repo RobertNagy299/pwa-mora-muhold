@@ -1,10 +1,14 @@
 <mat-card class="profile-card">
+  <mat-icon class="panel-classifier-icon">
+    manage_accounts
+  </mat-icon>
   <mat-card-title>Profile</mat-card-title>
   <mat-card-content>
     <div class="profile-info">
       <p><strong>Username:</strong> {{ userData?.username }}</p>
       <p><strong>Email:</strong> {{ userData?.email }}</p>
     </div>
+    <h2>Change password</h2>
     <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Current Password</mat-label>
@@ -17,12 +21,59 @@
         <mat-error *ngIf="passwordForm.get('newPassword')?.invalid">New password is required</mat-error>
       </mat-form-field>
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Confirm Password</mat-label>
+        <mat-label>Confirm New Password</mat-label>
         <input matInput type="password" formControlName="confirmPassword" required>
         <mat-error *ngIf="passwordForm.get('confirmPassword')?.invalid">Confirm your password</mat-error>
         <mat-error *ngIf="passwordForm.errors?.['passwordMismatch']">Passwords do not match</mat-error>
       </mat-form-field>
       <button id="changeButton" mat-raised-button color="primary" type="submit" [disabled]="passwordForm.invalid">Change Password</button>
+    </form>
+  </mat-card-content>
+
+
+</mat-card>
+<mat-divider *ngIf="userData?.role === 'admin'" vertical="true" style="height: 48px; border-right-style: none" ></mat-divider>
+<mat-card class="profile-card" *ngIf="userData?.role === 'admin'" >
+  <mat-icon class="panel-classifier-icon">
+    admin_panel_settings
+  </mat-icon>
+  <mat-card-title>
+     Admin control panel</mat-card-title>
+  <mat-card-content>
+    <div class="admin-delete-uptime-container">
+
+      <button class="delete-button" *ngIf="userData?.role === 'admin'" mat-raised-button color="warn" (click)="resetData()">
+        <mat-icon>
+          restart_alt
+        </mat-icon>
+        Reset Satellite Data</button>
+      <i class="info dangerous">This action resets the uptime to zero and deletes all voltage and temperature readings</i>
+    </div>
+
+  </mat-card-content>
+
+</mat-card>
+
+<mat-divider vertical="true" style="height: 48px; border-right-style: none" ></mat-divider>
+<mat-card class="profile-card">
+  <mat-icon class="panel-classifier-icon">
+    dangerous
+  </mat-icon>
+  <mat-card-title>Delete Account</mat-card-title>
+  <p class="info">Enter your credentials to delete your account</p>
+  <mat-card-content>
+    <form [formGroup]="deleteForm" (ngSubmit)="deleteUser()">
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email">
+        <mat-error *ngIf="deleteForm.get('email')?.invalid && deleteForm.get('email')?.touched">Email is required</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password" type="password">
+        <mat-error *ngIf="deleteForm.get('password')?.invalid && deleteForm.get('password')?.touched">Password is required</mat-error>
+      </mat-form-field>
+      <button class="delete-button" mat-raised-button color="warn" type="submit">Delete Account</button>
     </form>
   </mat-card-content>
 </mat-card>

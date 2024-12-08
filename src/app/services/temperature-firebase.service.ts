@@ -1,18 +1,20 @@
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {Database, ref, set, get, query, orderByKey, limitToLast, remove} from '@angular/fire/database';
 import { Observable } from 'rxjs';
 
 import Chart from 'chart.js/auto';
 //import { Chart, LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement } from 'chart.js';
-import {UptimeService} from './uptime.service'; // Import necessary Chart.js components
+import {UptimeService} from './uptime.service';
+import {HomeComponent} from '../components/home/home.component'; // Import necessary Chart.js components
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class VoltageFirebaseService {
+export class TemperatureFirebaseService {
 
   private chart: Chart | null = null;
+  private homeComponent = inject(HomeComponent);
 
   constructor(private uptimeService: UptimeService,private db: Database) {}
 
@@ -24,9 +26,9 @@ export class VoltageFirebaseService {
         labels: [], // X axis: Uptime values (timestamp)
         datasets: [
           {
-            label: 'Voltage',
-            data: [], // Y axis: Voltage values
-            borderColor: 'rgb(75, 192, 192)',
+            label: 'Temperature',
+            data: [], // Y axis: Temperature values
+            borderColor: 'rgb(255,110,17)',
             fill: false,
           },
         ],
@@ -48,7 +50,7 @@ export class VoltageFirebaseService {
           y: {
             title: {
               display: true,
-              text: 'Voltage (V)',
+              text: 'Temperature (°C)',
             },
           },
         },
@@ -56,11 +58,11 @@ export class VoltageFirebaseService {
     });
   }
 
-  // Fetch the last 'N' historical voltage data from Firebase
+  // Fetch the last 'N' historical temperature data from Firebase, omitting the last 2 most recent readings
   async fetchHistoricalData(limit: number): Promise<any[]> {
-    const voltageRef = ref(this.db, 'voltageReadings');
-    const voltageQuery = query(voltageRef, orderByKey(), limitToLast(limit + 2));
-    const snapshot = await get(voltageQuery);
+    const temperatureRef = ref(this.db, 'temperatureReadings');
+    const temperatureQuery = query(temperatureRef, orderByKey(), limitToLast(limit + 2));
+    const snapshot = await get(temperatureQuery);
     const data = snapshot.val();
     if (!data) {
       return [];
@@ -69,38 +71,38 @@ export class VoltageFirebaseService {
     return allReadings.slice(0, -2); // Omit the last 2 readings
   }
 
-  // Listen for voltage updates from Firebase and update the chart
-  listenForVoltageUpdates(): Observable<any[]> {
-    ref(this.db, 'voltageReadings');
+  // Listen for temperature updates from Firebase and update the chart
+  listenForTemperatureUpdates(): Observable<any[]> {
+    ref(this.db, 'temperatureReadings');
     return new Observable<any[]>((observer) => {
       setInterval(async () => {
-        const randomVoltage = (Math.random() * 5).toFixed(2); // Generate a random voltage between 0 and 5 volts
+        const randomTemperature = (Math.random()*40*(Math.random() < 0.5 ? -1 : 1)).toFixed(2); // Generate a random temperature value between -40 and 40 degrees celsius
         const currentUptime = await this.uptimeService.getCounterValue();
-        const voltageData = {
+        const temperatureData = {
           uptime: currentUptime, // Use the current timestamp as uptime
-          voltage: parseFloat(randomVoltage), // Parse the voltage as a float
+          temperature: parseFloat(randomTemperature), // Parse the temperature as a float
         };
 
-        // Save the new voltage reading to Firebase
-        await set(ref(this.db, 'voltageReadings/' + voltageData.uptime), voltageData);
+        // Save the new temperature reading to Firebase
+        await set(ref(this.db, 'temperatureReadings/' + temperatureData.uptime), temperatureData);
 
-        observer.next([voltageData]);
+        observer.next([temperatureData]);
       }, 1000); // Update every second
     });
   }
 
 
-  // Update the chart with new voltage readings from Firebase
+  // Update the chart with new temperature readings from Firebase
   updateChart(data: any[]): void {
     if (this.chart) {
       data.forEach((reading: any) => {
         const uptime = reading.uptime;
-        const voltage = reading.voltage;
+        const temperature = reading.temperature;
 
         // Update chart with new data
         if(this.chart !== null && this.chart.data.labels !== undefined) {
           this.chart.data.labels.push(uptime);
-          this.chart.data.datasets[0].data.push(voltage);
+          this.chart.data.datasets[0].data.push(temperature);
           this.chart.update();
         }
 
@@ -109,10 +111,10 @@ export class VoltageFirebaseService {
   }
 
 
-  // Download voltage readings as JSON for logged-in users
-  downloadVoltageData(): void {
-    const voltageRef = ref(this.db, 'voltageReadings');
-    get(voltageRef).then((snapshot) => {
+  // Download temperature readings as JSON for logged-in users
+  downloadTemperatureData(): void {
+    const temperatureRef = ref(this.db, 'temperatureReadings');
+    get(temperatureRef).then((snapshot) => {
       const data = snapshot.val();
       if (data) {
         const jsonData = JSON.stringify(Object.values(data)); // Convert object to array if needed
@@ -120,11 +122,16 @@ export class VoltageFirebaseService {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'voltageReadings.json';
+        a.download = 'temperatureReadings.json';
         a.click();
         URL.revokeObjectURL(url); // Clean up the URL object after the download
       }
     });
+  }
+
+  async deleteAllTemperatureReadings(): Promise<void> {
+    const temperatureRef = ref(this.db, 'temperatureReadings');
+    await remove(temperatureRef);
   }
   // // teacher's material
   // private readonly collectionName = 'voltage';
@@ -147,8 +154,5 @@ export class VoltageFirebaseService {
   // TODO firebase init hosting, dist/mora-muhold, firebase deploy --only hosting
 
 
-  async deleteAllVoltageReadings(): Promise<void> {
-    const voltageRef = ref(this.db, 'voltageReadings');
-    await remove(voltageRef);
-  }
+
 }

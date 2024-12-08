@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {MatError, MatFormField, MatLabel} from '@angular/material/form-field';
 import {NgIf} from '@angular/common';
 import {MatButton} from '@angular/material/button';
@@ -8,7 +8,17 @@ import {MatCard, MatCardContent, MatCardTitle} from '@angular/material/card';
 import {AuthService} from '../../services/auth.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {User} from '../../interfaces/User';
+import {TemperatureFirebaseService} from '../../services/temperature-firebase.service';
+import {VoltageFirebaseService} from '../../services/voltage-firebase.service';
+import {UptimeService} from '../../services/uptime.service';
+import {MatDivider} from '@angular/material/divider';
+import {HomeComponent} from '../home/home.component';
+import {Subscription} from 'rxjs';
+import {MatIcon} from '@angular/material/icon';
+import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
+import {Router} from '@angular/router';
 
+@UntilDestroy()
 @Component({
   selector: 'app-profile',
   standalone: true,
@@ -22,29 +32,42 @@ import {User} from '../../interfaces/User';
     ReactiveFormsModule,
     MatCardContent,
     MatCardTitle,
-    MatCard
+    MatCard,
+    MatDivider,
+    MatIcon
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   userData: User | null = null;
   passwordForm!: FormGroup;
+  deleteForm!: FormGroup;
+  private homeComponent = inject(HomeComponent);
+  private authSubscription : Subscription | null = null;
 
   constructor(
     private authService: AuthService,
     private fb: FormBuilder,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private voltageService: VoltageFirebaseService,
+    private temperatureService: TemperatureFirebaseService,
+    private uptimeService: UptimeService,
+    private router: Router
   ) {
     this.passwordForm = this.fb.group({
       currentPassword: ['', Validators.required],
       newPassword: ['', Validators.required],
       confirmPassword: ['', Validators.required]
     }, { validators: this.passwordsMatchValidator });
+    this.deleteForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required]
+    });
   }
 
   ngOnInit(): void {
-    this.authService.getUserData().subscribe(user => {
+    this.authSubscription = this.authService.getUserData().subscribe(user => {
       this.userData = user;
     });
   }
@@ -55,12 +78,65 @@ export class ProfileComponent implements OnInit {
     return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
+  // async resetData(): Promise<void> {
+  //   if (confirm('Are you sure you want to reset the data?')) {
+  //     await this.voltageService.deleteAllVoltageReadings().then(() => {
+  //       return this.temperatureService.deleteAllTemperatureReadings();
+  //     }).then(() => {
+  //       return new Promise<void>((resolve, reject) => {
+  //         try {
+  //           this.uptimeService.resetUptimeCounter();
+  //           this.homeComponent.count.set(0);
+  //           resolve();
+  //         } catch (error) {
+  //           reject(error);
+  //         }
+  //       });
+  //     }).then(() => {
+  //       this.snackBar.open('Data reset successfully!', 'Close', {
+  //         duration: 3000,
+  //         panelClass: ['success-snackbar']
+  //       });
+  //     }).catch(error => {
+  //       console.error('Failed to reset data', error);
+  //       this.snackBar.open('Failed to reset data.', 'Close', {
+  //         duration: 3000,
+  //         panelClass: ['error-snackbar']
+  //       });
+  //     });
+  //   }
+  // }
+  async resetData(): Promise<void> {
+    if (confirm('Are you sure you want to reset the data?')) {
+      try {
+
+        await this.voltageService.deleteAllVoltageReadings();
+        await this.temperatureService.deleteAllTemperatureReadings();
+
+        this.uptimeService.resetUptimeCounter();
+        this.homeComponent.count.set(0);
+
+        this.snackBar.open('Data reset successfully!', 'Close', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+        await this.router.navigate(['/home']);
+      } catch (error) {
+        console.error('Failed to reset data', error);
+        this.snackBar.open('Failed to reset data.', 'Close', {
+          duration: 3000,
+          panelClass: ['error-snackbar']
+        });
+      }
+    }
+  }
+
   changePassword(): void {
     if (this.passwordForm.valid) {
       const currentPassword = this.passwordForm.get('currentPassword')?.value;
       const newPassword = this.passwordForm.get('newPassword')?.value;
       if (currentPassword && newPassword) {
-        this.authService.changePassword(currentPassword, newPassword).subscribe(() => {
+        this.authService.changePassword(currentPassword, newPassword).pipe(untilDestroyed(this)).subscribe(() => {
           this.snackBar.open('Password changed successfully!', 'Close', {
             duration: 3000,
             panelClass: ['success-snackbar']
@@ -101,6 +177,42 @@ export class ProfileComponent implements OnInit {
           // });
         });
       }
+    }
+  }
+
+  deleteUser(): void {
+    if (this.deleteForm.valid) {
+      const email = this.deleteForm.get('email')?.value;
+      const password = this.deleteForm.get('password')?.value;
+      if (email && password) {
+        this.authService.deleteUser(email, password).pipe(untilDestroyed(this)).subscribe(() => {
+          this.snackBar.open('User deleted successfully!', 'Close', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+          // Additional logic after successful deletion
+        }, error => {
+          console.log(error.toString());
+          if (error.toString().includes("wrong-password")) {
+            console.log("Wrong password");
+            this.snackBar.open('Failed to delete user. The password you entered is incorrect', 'Close', {
+              duration: 3000,
+              panelClass: ['error-snackbar']
+            });
+          } else {
+            this.snackBar.open('Failed to delete user.', 'Close', {
+              duration: 3000,
+              panelClass: ['error-snackbar']
+            });
+          }
+        });
+      }
+    }
+  }
+
+  ngOnDestroy() {
+    if(this.authSubscription) {
+      this.authSubscription.unsubscribe();
     }
   }
 }
