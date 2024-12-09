@@ -3,7 +3,8 @@ import { UptimeService } from '../../services/uptime.service';
 import {interval, Subscription} from 'rxjs';
 import { UptimeTransformPipe } from '../../pipes/uptime-transform.pipe';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
-import {ConnectivityService} from '../../services/connectivity.service';
+import {IndexedDBService} from '../../services/indexed-db.service';
+import {ConstantsEnum} from '../../utils/constants';
 
 @UntilDestroy()
 @Injectable({
@@ -18,22 +19,16 @@ import {ConnectivityService} from '../../services/connectivity.service';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   uptimeService = inject(UptimeService);
+  indexedDBService = inject(IndexedDBService);
   public count = signal(0);
-  isOnline: boolean = true;
+
   private updating = false;
   // Global subscriptions, they are unsubscribed from in the root component, don't worry
   public intervalSubscription: Subscription | null = null;
   public resetTimerSubscription: Subscription | null = null;
 
-  //global storage ngrx state management (tfw no [count, setCount] = React.useState(0); )
-  constructor(private connectivityService: ConnectivityService) {
 
-    console.log("Home constructor runs!");
-    this.connectivityService.isOnline$.pipe(untilDestroyed(this)).
-    subscribe((status) => {
-      this.isOnline = status;
-    });
-
+  constructor() {
     // Subscribe to the reset counter event from the UptimeService
     this.resetTimerSubscription = this.uptimeService.resetCounter$
       .subscribe(() => {
@@ -48,35 +43,59 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    console.log("Home ngOnInit runs!");
-    // Fetch the initial counter value from Firebase when the component is initialized
-    this.uptimeService.getCounterValue().then((counter) => {
-      this.count.set(counter);
+    // First, try to fetch the counter value from IndexedDB
+    try {
+      const storedCounter = await this.indexedDBService.getUptime();
+      if (storedCounter !== null) {
+        this.count.set(storedCounter);  // Use stored value from IndexedDB
+      } else {
+        // If IndexedDB doesn't have a value, fetch from Firebase
+        const counter = await this.uptimeService.getCounterValue();
+        this.count.set(counter);
+        // Save the counter value to IndexedDB on successful fetch
+        await this.indexedDBService.saveUptime(counter);
+      }
       this.startIncrementing();
-
-    });
+    } catch (err) {
+     // console.error('Failed to fetch from Firebase or IndexedDB', err);
+      // Start incrementing even if the fetch fails
+      this.startIncrementing();
+    }
   }
 
-   ngOnDestroy() {
+
+  ngOnDestroy() {
     console.log("Home ngOnDestroy runs!");
     // this.saveCounterValue();
   }
 
-  //save counter value
   async saveCounterValue() {
-    if (this.isOnline) {
-      await this.uptimeService.saveCounterValue(this.count());
-    } else {
-      this.uptimeService.saveCounterValueToLocalstore(this.count());
+    const currentValue = this.count();
+    await this.indexedDBService.saveUptime(currentValue);
+
+    try {
+      await this.saveToFirebaseWithTimeout(currentValue, ConstantsEnum.timeoutLimit); // 3 seconds timeout
+    } catch (err) {
+     // console.error('Failed to save to Firebase, but saved to IndexedDB', err);
     }
   }
-
+  // Method to save to Firebase with a timeout
+  saveToFirebaseWithTimeout(value: number, timeout: number): Promise<void> {
+    const firebasePromise = this.uptimeService.saveCounterValue(value);
+    const timeoutPromise = new Promise<void>((_, reject) =>
+      setTimeout(() => reject(new Error('Firebase save timed out')), timeout)
+    );
+    return Promise.race([firebasePromise, timeoutPromise]);
+  }
   // Increment the count by 1
   increment() {
     this.count.update(value => value + 1);
     if (!this.updating) {
       this.updating = true;
+      //console.log("We are inside increment !this.updating if");
       this.saveCounterValue().finally(() => {
+
+       // console.log("inside increment function saveCounterValue.finally()");
         this.updating = false;
       });
     }

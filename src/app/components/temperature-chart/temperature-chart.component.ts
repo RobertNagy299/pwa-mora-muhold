@@ -5,7 +5,10 @@ import {MatIcon} from '@angular/material/icon';
 import {MatButton} from '@angular/material/button';
 import {NgIf} from '@angular/common';
 import {TemperatureFirebaseService} from '../../services/temperature-firebase.service';
+import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
+import {ConstantsEnum} from '../../utils/constants';
 
+@UntilDestroy()
 @Component({
   selector: 'app-temperature-chart',
   standalone: true,
@@ -21,7 +24,6 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
 
   private temperatureSubscription: Subscription | null = null;
   protected isLoggedIn = false;
-  private readonly DATA_LIMIT = 30; // Number of readings to fetch
 
   constructor(private authService: AuthService ,private temperatureChartService: TemperatureFirebaseService,
               private el: ElementRef) {}
@@ -34,7 +36,7 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
     this.temperatureChartService.createChart(canvas);
 
     // Fetch historical data and update the chart
-    this.temperatureChartService.fetchHistoricalData(this.DATA_LIMIT).then((historicalData) => {
+    this.temperatureChartService.fetchHistoricalData(ConstantsEnum.dataLimit).then((historicalData) => {
       this.temperatureChartService.updateChart(historicalData);
     });
     // Listen for voltage updates and update the chart
@@ -43,13 +45,13 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
     });
 
     // Check authentication status
-    this.authService.authState$.subscribe(isLoggedIn => {
+    this.authService.authState$.pipe(untilDestroyed(this)).subscribe(isLoggedIn => {
       this.isLoggedIn = isLoggedIn;
     });
   }
   // Method to trigger download for logged-in users
-  downloadTemperatureData(): void {
-    this.temperatureChartService.downloadTemperatureData();
+  async downloadTemperatureData(): Promise<void> {
+    await this.temperatureChartService.downloadTemperatureData();
   }
 
   ngOnDestroy(): void {
@@ -58,15 +60,4 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
       this.temperatureSubscription.unsubscribe();
     }
   }
-  // voltageFirebaseService = inject(VoltageFirebaseService);
-  // protected arrayOfVoltages!: VoltageInterface[]
-  // ngOnInit() {
-  //   this.voltageFirebaseService.getAllVoltageValues().subscribe(
-  //     voltages => {
-  //         console.log(voltages);
-  //         // TODO save in indexedDB and local storage
-  //         this.arrayOfVoltages=voltages;
-  //     }
-  //   )
-  // }
 }

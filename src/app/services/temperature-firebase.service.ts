@@ -1,12 +1,14 @@
-import {inject, Injectable} from '@angular/core';
+import { Injectable} from '@angular/core';
 import {Database, ref, set, get, query, orderByKey, limitToLast, remove} from '@angular/fire/database';
 import { Observable } from 'rxjs';
 
 import Chart from 'chart.js/auto';
 //import { Chart, LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement } from 'chart.js';
 import {UptimeService} from './uptime.service';
-import {HomeComponent} from '../components/home/home.component'; // Import necessary Chart.js components
 
+import {IndexedDBService} from './indexed-db.service'; // Import necessary Chart.js components
+import {fetchWithTimeout} from '../utils/fetchWithTimeout';
+import {ConstantsEnum} from '../utils/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -14,9 +16,12 @@ import {HomeComponent} from '../components/home/home.component'; // Import neces
 export class TemperatureFirebaseService {
 
   private chart: Chart | null = null;
-  private homeComponent = inject(HomeComponent);
 
-  constructor(private uptimeService: UptimeService,private db: Database) {}
+
+
+  constructor(private uptimeService: UptimeService,
+              private db: Database,
+              private indexedDBService: IndexedDBService) {}
 
   // Create the chart instance and set its initial configuration
   createChart(chartElement: HTMLCanvasElement): void {
@@ -58,22 +63,25 @@ export class TemperatureFirebaseService {
     });
   }
 
-  // Fetch the last 'N' historical temperature data from Firebase, omitting the last 2 most recent readings
+
+
   async fetchHistoricalData(limit: number): Promise<any[]> {
-    const temperatureRef = ref(this.db, 'temperatureReadings');
-    const temperatureQuery = query(temperatureRef, orderByKey(), limitToLast(limit + 2));
-    const snapshot = await get(temperatureQuery);
-    const data = snapshot.val();
-    if (!data) {
-      return [];
+    try {
+      const data = await fetchWithTimeout(
+        get(query(ref(this.db, ConstantsEnum.temperatureObjectStoreName), orderByKey(), limitToLast(limit + 2))),
+        ConstantsEnum.timeoutLimit // Timeout after n seconds
+      );
+      const readings = Object.values(data.val());
+      return readings.slice(0, -2); // Omit the last 2 readings
+    } catch (error) {
+      // console.error('Fetching data from Firebase failed, falling back to IndexedDB', error);
+      return this.indexedDBService.getLastNTemperatureReadingsExcludingLast2(limit);
     }
-    const allReadings = Object.values(data);
-    return allReadings.slice(0, -2); // Omit the last 2 readings
   }
 
   // Listen for temperature updates from Firebase and update the chart
   listenForTemperatureUpdates(): Observable<any[]> {
-    ref(this.db, 'temperatureReadings');
+    ref(this.db, ConstantsEnum.temperatureObjectStoreName);
     return new Observable<any[]>((observer) => {
       setInterval(async () => {
         const randomTemperature = (Math.random()*40*(Math.random() < 0.5 ? -1 : 1)).toFixed(2); // Generate a random temperature value between -40 and 40 degrees celsius
@@ -83,8 +91,15 @@ export class TemperatureFirebaseService {
           temperature: parseFloat(randomTemperature), // Parse the temperature as a float
         };
 
-        // Save the new temperature reading to Firebase
-        await set(ref(this.db, 'temperatureReadings/' + temperatureData.uptime), temperatureData);
+        try {
+          await fetchWithTimeout(
+            set(ref(this.db, `${ConstantsEnum.temperatureObjectStoreName}/` + temperatureData.uptime), temperatureData),
+            ConstantsEnum.timeoutLimit // Timeout after n seconds
+          );
+        } catch (error) {
+          //console.error('Saving data to Firebase failed, saving to IndexedDB', error);
+          await this.indexedDBService.addTemperatureReading(temperatureData);
+        }
 
         observer.next([temperatureData]);
       }, 1000); // Update every second
@@ -112,26 +127,30 @@ export class TemperatureFirebaseService {
 
 
   // Download temperature readings as JSON for logged-in users
-  downloadTemperatureData(): void {
-    const temperatureRef = ref(this.db, 'temperatureReadings');
-    get(temperatureRef).then((snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const jsonData = JSON.stringify(Object.values(data)); // Convert object to array if needed
-        const blob = new Blob([jsonData], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'temperatureReadings.json';
-        a.click();
-        URL.revokeObjectURL(url); // Clean up the URL object after the download
-      }
-    });
+  async downloadTemperatureData(): Promise<void> {
+    try {
+      const data = await fetchWithTimeout(get(ref(this.db, ConstantsEnum.temperatureObjectStoreName)), ConstantsEnum.timeoutLimit);
+      this.downloadData(Object.values(data.val()));
+    } catch (error) {
+      //console.error('Fetching data from Firebase failed, falling back to IndexedDB', error);
+      const data = await this.indexedDBService.getAllTemperatureReadings();
+      this.downloadData(data);
+    }
+  }
+  private downloadData(data: any[]): void {
+    const jsonData = JSON.stringify(data);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'temperatureReadings.json';
+    a.click();
+    URL.revokeObjectURL(url); // Clean up the URL object after the download
   }
 
   async deleteAllTemperatureReadings(): Promise<void> {
-    const temperatureRef = ref(this.db, 'temperatureReadings');
-    await remove(temperatureRef);
+    await fetchWithTimeout( remove(ref(this.db, ConstantsEnum.temperatureObjectStoreName)), ConstantsEnum.timeoutLimit*2);
+    await this.indexedDBService.clearTemperatureReadings();
   }
   // // teacher's material
   // private readonly collectionName = 'voltage';

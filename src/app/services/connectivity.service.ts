@@ -1,33 +1,24 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, fromEvent, Observable} from 'rxjs';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {Injectable, OnDestroy} from '@angular/core';
+import {fromEvent, merge, Observable, of} from 'rxjs';
+import { UntilDestroy } from '@ngneat/until-destroy';
+import {map} from 'rxjs/operators';
 
-
+@UntilDestroy()
 @Injectable({
   providedIn: 'root'
 })
-export class ConnectivityService {
+export class ConnectivityService implements OnDestroy {
 
-  private onlineStatusSubject: BehaviorSubject<boolean>;
-
-
+  isOnline$: Observable<boolean>;
+  // EGY ISTENNEK SE AKAR MUKODNI EZ A KIBASZOTT KURVA SZAR HOGY A JO BUDOS KURVA ANYJA BASZNA MEG AZ EGESZ ANGULAROS KIBASZOTT SZART GECIWEIC24HI2T424H2T4H24C24C
   constructor() {
-    // Initialize the BehaviorSubject with the current online status
-    this.onlineStatusSubject = new BehaviorSubject<boolean>(navigator.onLine);
-
-    // Listen for online and offline events to update the status
-    fromEvent(window, 'online').subscribe(() => {
-      this.onlineStatusSubject.next(true); // Set online when the 'online' event is fired
-    });
-
-    fromEvent(window, 'offline').subscribe(() => {
-      this.onlineStatusSubject.next(false); // Set offline when the 'offline' event is fired
-    });
+    this.isOnline$ = merge(
+      of(navigator.onLine),
+      fromEvent(window, 'online').pipe(map(()=>true)),
+      fromEvent(window, 'offline').pipe(map(()=>false))
+    );
   }
-
-  // Observable to subscribe to for online/offline status
-  get isOnline$(): Observable<boolean> {
-    return this.onlineStatusSubject.asObservable();
+  ngOnDestroy() {
+    console.log("Connection service destroyed!");
   }
-
 }

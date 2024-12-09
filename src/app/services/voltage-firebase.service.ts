@@ -4,7 +4,12 @@ import { Observable } from 'rxjs';
 
 import Chart from 'chart.js/auto';
 //import { Chart, LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement } from 'chart.js';
-import {UptimeService} from './uptime.service'; // Import necessary Chart.js components
+import {UptimeService} from './uptime.service';
+import {IndexedDBService} from './indexed-db.service';
+import {ConstantsEnum} from '../utils/constants';
+import {fetchWithTimeout} from '../utils/fetchWithTimeout';
+
+// Import necessary Chart.js components
 
 
 @Injectable({
@@ -14,7 +19,10 @@ export class VoltageFirebaseService {
 
   private chart: Chart | null = null;
 
-  constructor(private uptimeService: UptimeService,private db: Database) {}
+  constructor(private uptimeService: UptimeService,
+              private db: Database,
+              private indexedDBService: IndexedDBService
+  ) {}
 
   // Create the chart instance and set its initial configuration
   createChart(chartElement: HTMLCanvasElement): void {
@@ -56,22 +64,22 @@ export class VoltageFirebaseService {
     });
   }
 
-  // Fetch the last 'N' historical voltage data from Firebase
   async fetchHistoricalData(limit: number): Promise<any[]> {
-    const voltageRef = ref(this.db, 'voltageReadings');
-    const voltageQuery = query(voltageRef, orderByKey(), limitToLast(limit + 2));
-    const snapshot = await get(voltageQuery);
-    const data = snapshot.val();
-    if (!data) {
-      return [];
+    try {
+      const data = await fetchWithTimeout(
+        get(query(ref(this.db, ConstantsEnum.voltageObjectStoreName), orderByKey(), limitToLast(limit + 2))),
+        ConstantsEnum.timeoutLimit // Timeout after n seconds
+      );
+      const readings = Object.values(data.val());
+      return readings.slice(0, -2); // Omit the last 2 readings
+    } catch (error) {
+     // console.error('Fetching data from Firebase failed, falling back to IndexedDB', error);
+      return this.indexedDBService.getLastNVoltageReadingsExcludingLast2(limit);
     }
-    const allReadings = Object.values(data);
-    return allReadings.slice(0, -2); // Omit the last 2 readings
   }
 
-  // Listen for voltage updates from Firebase and update the chart
+  // Listen for voltage updates from Firebase or generate random data if offline
   listenForVoltageUpdates(): Observable<any[]> {
-    ref(this.db, 'voltageReadings');
     return new Observable<any[]>((observer) => {
       setInterval(async () => {
         const randomVoltage = (Math.random() * 5).toFixed(2); // Generate a random voltage between 0 and 5 volts
@@ -81,13 +89,21 @@ export class VoltageFirebaseService {
           voltage: parseFloat(randomVoltage), // Parse the voltage as a float
         };
 
-        // Save the new voltage reading to Firebase
-        await set(ref(this.db, 'voltageReadings/' + voltageData.uptime), voltageData);
+        try {
+          await fetchWithTimeout(
+            set(ref(this.db, `${ConstantsEnum.voltageObjectStoreName}/` + voltageData.uptime), voltageData),
+            ConstantsEnum.timeoutLimit // Timeout after n seconds
+          );
+        } catch (error) {
+          //console.error('Saving data to Firebase failed, saving to IndexedDB', error);
+          await this.indexedDBService.addVoltageReading(voltageData);
+        }
 
         observer.next([voltageData]);
       }, 1000); // Update every second
     });
   }
+
 
 
   // Update the chart with new voltage readings from Firebase
@@ -110,45 +126,54 @@ export class VoltageFirebaseService {
 
 
   // Download voltage readings as JSON for logged-in users
-  downloadVoltageData(): void {
-    const voltageRef = ref(this.db, 'voltageReadings');
-    get(voltageRef).then((snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const jsonData = JSON.stringify(Object.values(data)); // Convert object to array if needed
-        const blob = new Blob([jsonData], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'voltageReadings.json';
-        a.click();
-        URL.revokeObjectURL(url); // Clean up the URL object after the download
-      }
-    });
+  async downloadVoltageData(): Promise<void> {
+    try {
+      const data = await fetchWithTimeout(get(ref(this.db, ConstantsEnum.voltageObjectStoreName)), ConstantsEnum.timeoutLimit);
+      this.downloadData(Object.values(data.val()));
+    } catch (error) {
+      //console.error('Fetching data from Firebase failed, falling back to IndexedDB', error);
+      const data = await this.indexedDBService.getAllVoltageReadings();
+      this.downloadData(data);
+    }
   }
-  // // teacher's material
-  // private readonly collectionName = 'voltage';
-  // constructor(private readonly fireStore: Firestore) { }
-  //
-  // public saveVoltage(voltage: VoltageInterface){
-  //
-  //   //Puts an object into a collection, returns with a promise
-  //   //from -> creates an observable from a promise
-  //   return from(addDoc(collection(this.fireStore, this.collectionName), voltage));
-  //
-  // }
-  //
-  // public getAllVoltageValues(){
-  //   return from(getDocs(query(collection(this.fireStore, this.collectionName))))
-  //     .pipe(map(snapShot => snapShot.docs.map( (voltage) => voltage.data() as VoltageInterface ))
-  //     ,catchError(()=>of([])));
-  // }
 
-  // TODO firebase init hosting, dist/mora-muhold, firebase deploy --only hosting
-
-
+  private downloadData(data: any[]): void {
+    const jsonData = JSON.stringify(data);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'voltageReadings.json';
+    a.click();
+    URL.revokeObjectURL(url); // Clean up the URL object after the download
+  }
   async deleteAllVoltageReadings(): Promise<void> {
-    const voltageRef = ref(this.db, 'voltageReadings');
-    await remove(voltageRef);
+    await fetchWithTimeout( remove(ref(this.db, ConstantsEnum.voltageObjectStoreName)), ConstantsEnum.timeoutLimit*2);
+    await this.indexedDBService.clearVoltageReadings();
   }
 }
+
+
+
+
+
+
+// // teacher's material
+// private readonly collectionName = 'voltage';
+// constructor(private readonly fireStore: Firestore) { }
+//
+// public saveVoltage(voltage: VoltageInterface){
+//
+//   //Puts an object into a collection, returns with a promise
+//   //from -> creates an observable from a promise
+//   return from(addDoc(collection(this.fireStore, this.collectionName), voltage));
+//
+// }
+//
+// public getAllVoltageValues(){
+//   return from(getDocs(query(collection(this.fireStore, this.collectionName))))
+//     .pipe(map(snapShot => snapShot.docs.map( (voltage) => voltage.data() as VoltageInterface ))
+//     ,catchError(()=>of([])));
+// }
+
+// TODO firebase init hosting, dist/mora-muhold, firebase deploy --only hosting

@@ -113,7 +113,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         await this.voltageService.deleteAllVoltageReadings();
         await this.temperatureService.deleteAllTemperatureReadings();
 
-        this.uptimeService.resetUptimeCounter();
+        await this.uptimeService.resetUptimeCounter();
         this.homeComponent.count.set(0);
 
         this.snackBar.open('Data reset successfully!', 'Close', {

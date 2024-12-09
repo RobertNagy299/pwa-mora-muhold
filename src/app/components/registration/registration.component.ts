@@ -9,7 +9,9 @@ import { MatCardModule } from '@angular/material/card';
 import { ReactiveFormsModule } from '@angular/forms';
 import {Router} from '@angular/router';
 import {Subscription} from 'rxjs';
+import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-registration',
   standalone: true,
@@ -58,7 +60,7 @@ export class RegistrationComponent implements OnInit, OnDestroy {
     this.submitted = true; // Mark the form as submitted
     if (this.registerForm.valid) {
       const { username, email, password } = this.registerForm.value;
-      this.authService.register(username, email, password).subscribe(
+      this.authService.register(username, email, password).pipe(untilDestroyed(this)).subscribe(
         () => {
           this.successMessage = 'User registered successfully';
           this.errorMessage = null;

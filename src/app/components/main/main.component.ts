@@ -23,7 +23,9 @@ import {isPlatformBrowser, NgIf} from '@angular/common';
 import {MatMenu, MatMenuItem} from '@angular/material/menu';
 import {AuthService} from '../../services/auth.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-main',
   standalone: true,
@@ -63,22 +65,22 @@ export class MainComponent implements OnInit, AfterViewInit{
   constructor(private router: Router ,private snackBar: MatSnackBar,private authService: AuthService ,private themeService: ThemeService, @Inject(PLATFORM_ID) private platformId: Object) {}
 
   ngOnInit() {
-    this.authService.authState$.subscribe(isLoggedIn => {
+    this.authService.authState$.pipe(untilDestroyed(this)).subscribe(isLoggedIn => {
       this.isLoggedIn = isLoggedIn;
     });
-    this.themeService.isDarkTheme.subscribe((isDark) => {
+    this.themeService.isDarkTheme.pipe(untilDestroyed(this)).subscribe((isDark) => {
       this.switchTheme.setValue(isDark, { emitEvent: false });
       this.updateTheme(isDark);
     });
 
-    this.switchTheme.valueChanges.subscribe((isDark) => {
+    this.switchTheme.valueChanges.pipe(untilDestroyed(this)).subscribe((isDark) => {
       if (isDark !== null) {
         this.themeService.toggleTheme(isDark);
       }
     });
   }
   logout(): void {
-    this.authService.logout().subscribe(() => {
+    this.authService.logout().pipe(untilDestroyed(this)).subscribe(() => {
       this.snackBar.open('Logged out successfully!', 'Close', {
         duration: 3000,
         panelClass: ['success-snackbar']

@@ -10,6 +10,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import {Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @UntilDestroy()
 @Component({
@@ -33,7 +34,10 @@ export class LoginComponent implements OnInit, OnDestroy  {
   submitted: boolean = false;
   private authSubscription: Subscription | null = null;
 
-  constructor(private router: Router ,private fb: FormBuilder, private authService: AuthService) {
+  constructor(private router: Router ,
+              private fb: FormBuilder,
+              private authService: AuthService,
+              private snackBar: MatSnackBar) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
@@ -55,12 +59,14 @@ export class LoginComponent implements OnInit, OnDestroy  {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
       this.authService.login(email, password).pipe(untilDestroyed(this)).subscribe(
-        () => {
+        async () => {
           this.successMessage = 'Login successful';
           this.errorMessage = null;
-          setTimeout(()=>{
-            this.router.navigate(['/home']);
-          }, 350);
+          this.snackBar.open(this.successMessage, 'Close', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+          await this.router.navigate(['/home']);
         },
         (error) => {
           this.errorMessage = 'Login failed: ' + error.message;
