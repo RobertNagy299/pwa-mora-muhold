@@ -5,6 +5,9 @@ import { UptimeTransformPipe } from '../../pipes/uptime-transform.pipe';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {IndexedDBService} from '../../services/indexed-db.service';
 import {ConstantsEnum} from '../../utils/constants';
+import {AuthService} from '../../services/auth.service';
+import {AsyncPipe, NgIf} from '@angular/common';
+import {GradientTextDirective} from '../../directives/gradient-text.directive';
 
 @UntilDestroy()
 @Injectable({
@@ -14,7 +17,7 @@ import {ConstantsEnum} from '../../utils/constants';
   selector: 'app-home',
   standalone: true,
   templateUrl: './home.component.html',
-  imports: [UptimeTransformPipe],
+  imports: [UptimeTransformPipe, AsyncPipe, NgIf, GradientTextDirective],
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit, OnDestroy {
@@ -28,7 +31,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   public resetTimerSubscription: Subscription | null = null;
 
 
-  constructor() {
+  constructor(protected authService: AuthService) {
     // Subscribe to the reset counter event from the UptimeService
     this.resetTimerSubscription = this.uptimeService.resetCounter$
       .subscribe(() => {
@@ -46,7 +49,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // First, try to fetch the counter value from IndexedDB
     try {
       const storedCounter = await this.indexedDBService.getUptime();
-      if (storedCounter !== null) {
+      if (storedCounter !== null && storedCounter !== undefined && storedCounter > 0) {
         this.count.set(storedCounter);  // Use stored value from IndexedDB
       } else {
         // If IndexedDB doesn't have a value, fetch from Firebase

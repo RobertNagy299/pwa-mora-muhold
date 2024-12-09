@@ -10,6 +10,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import {Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @UntilDestroy()
 @Component({
@@ -34,7 +35,10 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   private authSubscription: Subscription | null = null;
 
 
-  constructor(private router: Router,private fb: FormBuilder, private authService: AuthService) {
+  constructor( private snackBar: MatSnackBar,
+               private router: Router,
+               private fb: FormBuilder,
+               private authService: AuthService) {
 
     this.registerForm = this.fb.group({
       username: ['', Validators.required],
@@ -62,9 +66,14 @@ export class RegistrationComponent implements OnInit, OnDestroy {
       const { username, email, password } = this.registerForm.value;
       this.authService.register(username, email, password).pipe(untilDestroyed(this)).subscribe(
         () => {
+
           this.successMessage = 'User registered successfully';
           this.errorMessage = null;
           this.registerForm.reset();
+          this.snackBar.open(this.successMessage, 'Close', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
 
           this.registerForm.markAsUntouched();
           this.registerForm.markAsPristine();
@@ -77,6 +86,7 @@ export class RegistrationComponent implements OnInit, OnDestroy {
               control.markAsPristine();  // Mark as pristine
             }
           });
+
           this.submitted = true; // Reset the submitted flag after successful registration
 
         },

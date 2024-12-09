@@ -1,3 +1,4 @@
+<ng-container *ngIf="this.connectivityService.onlineStatus$ | async as online; else offline">
 <mat-card class="profile-card">
   <mat-icon class="panel-classifier-icon">
     manage_accounts
@@ -77,3 +78,17 @@
     </form>
   </mat-card-content>
 </mat-card>
+</ng-container>
+<ng-template #offline>
+  <mat-card class="profile-card">
+    <mat-icon class="panel-classifier-icon">
+      wifi_off
+    </mat-icon>
+    <mat-card-title>
+      Oops!
+    </mat-card-title>
+    <mat-card-content>
+      <p class="info" style="margin-top: 24px !important;">Cannot perform account operations while offline! Please check your internet connection</p>
+    </mat-card-content>
+  </mat-card>
+</ng-template>

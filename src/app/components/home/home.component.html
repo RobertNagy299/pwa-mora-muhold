@@ -1,11 +1,14 @@
 <div class="home-container">
 
-  <h1>Welcome</h1>
-
-  <div class="satellite-container">
+  <h1 appGradientText [color1]="'cyan'" [color2]="'orange'" [duration]="'3s'">
+    Welcome<ng-container *ngIf="authService.currentUser$ | async as user; else guest">, {{ user?.username }}!
+    </ng-container>
+    <ng-template #guest>!</ng-template>
+  </h1>
+  <div  class="satellite-container">
   </div>
   <div>
-    <h2>Uptime:</h2>
-    <p>{{this.count() | uptimeTransform}}</p>
+    <h2 >Uptime:</h2>
+    <p >{{this.count() | uptimeTransform}}</p>
   </div>
 </div>

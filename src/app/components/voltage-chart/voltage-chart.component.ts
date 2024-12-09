@@ -7,6 +7,7 @@ import {MatButton} from '@angular/material/button';
 import {NgIf} from '@angular/common';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {ConstantsEnum} from '../../utils/constants';
+import {GradientTextDirective} from '../../directives/gradient-text.directive';
 
 @UntilDestroy()
 @Component({
@@ -15,7 +16,8 @@ import {ConstantsEnum} from '../../utils/constants';
   imports: [
     MatIcon,
     MatButton,
-    NgIf
+    NgIf,
+    GradientTextDirective
   ],
   templateUrl: './voltage-chart.component.html',
   styleUrl: './voltage-chart.component.scss'

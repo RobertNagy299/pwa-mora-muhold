@@ -1,5 +1,5 @@
 <div class="chart-container">
-  <h1>Voltage readings</h1>
+  <h1 appGradientText [color1]="'cyan'" [color2]="'darkblue'" [duration]="'15s'">Voltage readings</h1>
   <button mat-button mat-flat-button  *ngIf="isLoggedIn" (click)="downloadVoltageData()">
     JSON <mat-icon>download</mat-icon>
   </button>

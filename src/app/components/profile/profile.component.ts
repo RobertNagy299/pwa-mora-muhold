@@ -1,6 +1,6 @@
 import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {MatError, MatFormField, MatLabel} from '@angular/material/form-field';
-import {NgIf} from '@angular/common';
+import {AsyncPipe, NgIf} from '@angular/common';
 import {MatButton} from '@angular/material/button';
 import {MatInput} from '@angular/material/input';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
@@ -17,6 +17,7 @@ import {Subscription} from 'rxjs';
 import {MatIcon} from '@angular/material/icon';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {Router} from '@angular/router';
+import {ConnectivityService} from '../../services/connectivity.service';
 
 @UntilDestroy()
 @Component({
@@ -34,7 +35,8 @@ import {Router} from '@angular/router';
     MatCardTitle,
     MatCard,
     MatDivider,
-    MatIcon
+    MatIcon,
+    AsyncPipe
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
@@ -53,7 +55,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private voltageService: VoltageFirebaseService,
     private temperatureService: TemperatureFirebaseService,
     private uptimeService: UptimeService,
-    private router: Router
+    private router: Router,
+    protected connectivityService: ConnectivityService
   ) {
     this.passwordForm = this.fb.group({
       currentPassword: ['', Validators.required],
@@ -78,34 +81,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
-  // async resetData(): Promise<void> {
-  //   if (confirm('Are you sure you want to reset the data?')) {
-  //     await this.voltageService.deleteAllVoltageReadings().then(() => {
-  //       return this.temperatureService.deleteAllTemperatureReadings();
-  //     }).then(() => {
-  //       return new Promise<void>((resolve, reject) => {
-  //         try {
-  //           this.uptimeService.resetUptimeCounter();
-  //           this.homeComponent.count.set(0);
-  //           resolve();
-  //         } catch (error) {
-  //           reject(error);
-  //         }
-  //       });
-  //     }).then(() => {
-  //       this.snackBar.open('Data reset successfully!', 'Close', {
-  //         duration: 3000,
-  //         panelClass: ['success-snackbar']
-  //       });
-  //     }).catch(error => {
-  //       console.error('Failed to reset data', error);
-  //       this.snackBar.open('Failed to reset data.', 'Close', {
-  //         duration: 3000,
-  //         panelClass: ['error-snackbar']
-  //       });
-  //     });
-  //   }
-  // }
   async resetData(): Promise<void> {
     if (confirm('Are you sure you want to reset the data?')) {
       try {

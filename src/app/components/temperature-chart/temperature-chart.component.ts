@@ -7,6 +7,7 @@ import {NgIf} from '@angular/common';
 import {TemperatureFirebaseService} from '../../services/temperature-firebase.service';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {ConstantsEnum} from '../../utils/constants';
+import {GradientTextDirective} from '../../directives/gradient-text.directive';
 
 @UntilDestroy()
 @Component({
@@ -15,7 +16,8 @@ import {ConstantsEnum} from '../../utils/constants';
   imports: [
     MatIcon,
     MatButton,
-    NgIf
+    NgIf,
+    GradientTextDirective
   ],
   templateUrl: './temperature-chart.component.html',
   styleUrl: './temperature-chart.component.scss'
