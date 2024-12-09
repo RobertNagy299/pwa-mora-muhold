@@ -24,6 +24,7 @@
     "@angular/platform-server": "^18.2.0",
     "@angular/pwa": "^0.5.3",
     "@angular/router": "^18.2.0",
+    "@angular/service-worker": "^18.2.0",
     "@angular/ssr": "^18.2.11",
     "@ngneat/until-destroy": "^10.0.0",
     "chart.js": "^4.4.7",
