@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -25,7 +25,8 @@ import {MatSnackBar} from '@angular/material/snack-bar';
     ReactiveFormsModule,
   ],
   templateUrl: './registration.component.html',
-  styleUrls: ['./registration.component.scss']
+  styleUrls: ['./registration.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RegistrationComponent implements OnInit, OnDestroy {
   protected registerForm: FormGroup;
@@ -52,11 +53,9 @@ export class RegistrationComponent implements OnInit, OnDestroy {
 
   }
   ngOnInit() {
-    this.authSubscription = this.authService.getUserData().subscribe(user => {
-      if(user !== null && user !== undefined) {
-        this.router.navigate(['/home']).catch(err => {
-          console.log(err);
-        });
+    this.authSubscription = this.authService.getUserData().subscribe(async user => {
+      if (user !== null && user !== undefined) {
+        await this.router.navigate(['/home']);
       }
     });
   }

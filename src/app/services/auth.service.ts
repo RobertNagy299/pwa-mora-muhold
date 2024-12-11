@@ -131,7 +131,7 @@ export class AuthService {
   private authStateSubject = new BehaviorSubject<boolean>(false);
   public authState$ = this.authStateSubject.asObservable();
 
-  constructor(private firestore: Firestore, private auth: Auth, private router: Router) {
+  constructor(private readonly firestore: Firestore, private readonly auth: Auth, private router: Router) {
     this.auth = getAuth();
     this.firestore = getFirestore();
     this.initializeAuthStateListener();
@@ -154,7 +154,7 @@ export class AuthService {
             this.currentUserSubject.next(null); // If no user data found
           }
         } catch (error) {
-          console.error('Error fetching user data:', error);
+         // console.error('Error fetching user data:', error);
           this.currentUserSubject.next(null); // On error, emit null
         }
       } else {
@@ -206,8 +206,8 @@ export class AuthService {
           await deleteDoc(userDocRef);
           return authDeleteUser(user); // Delete the user from Firebase Authentication
         }).then(() => {
-          this.logout().pipe(untilDestroyed(this)).subscribe(() => {
-            this.router.navigate(['/home']);
+          this.logout().pipe(untilDestroyed(this)).subscribe(async () => {
+            await this.router.navigate(['/home']);
           });
         })
       );

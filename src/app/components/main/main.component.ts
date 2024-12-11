@@ -1,4 +1,12 @@
-import {AfterViewInit, Component, ElementRef, Inject, OnInit, PLATFORM_ID, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component, ElementRef,
+  Inject,
+  OnInit,
+  PLATFORM_ID,
+  ViewChild
+} from '@angular/core';
 import {
   MatDrawer,
   MatDrawerContainer,
@@ -55,7 +63,8 @@ import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
     NgIf
   ],
   templateUrl: './main.component.html',
-  styleUrl: './main.component.scss'
+  styleUrl: './main.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MainComponent implements OnInit, AfterViewInit{
 
@@ -80,15 +89,13 @@ export class MainComponent implements OnInit, AfterViewInit{
     });
   }
   logout(): void {
-    this.authService.logout().pipe(untilDestroyed(this)).subscribe(() => {
+    this.authService.logout().pipe(untilDestroyed(this)).subscribe(async () => {
       this.snackBar.open('Logged out successfully!', 'Close', {
         duration: 3000,
         panelClass: ['success-snackbar']
       });
       // Optionally, navigate to login page or home page
-       this.router.navigate(['/home']).catch(err => {
-         console.log("error redirecting: " + err);
-       });
+      await this.router.navigate(['/home']);
     });
   }
   updateTheme(isDark: boolean) {
@@ -122,5 +129,5 @@ export class MainComponent implements OnInit, AfterViewInit{
   }
 
 
-  protected readonly window = window;
+  //protected readonly window = window;
 }

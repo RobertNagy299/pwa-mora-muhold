@@ -1,4 +1,4 @@
-<ng-container *ngIf="this.connectivityService.onlineStatus$ | async as online; else offline">
+<ng-container *ngIf="this.connectivityService.onlineStatus$ | async ; else offline">
 <mat-card class="profile-card">
   <mat-icon class="panel-classifier-icon">
     manage_accounts

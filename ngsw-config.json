@@ -28,15 +28,14 @@
   ],
   "dataGroups": [
     {
-      "name": "api",
+      "name": "material-icons",
       "urls": [
-        "https://szte-satellite.firebaseio.com/users",
-        "https://szte-satellite-default-rtdb.europe-west1.firebasedatabase.app/**"
-
-         ],
+        "https://fonts.googleapis.com/icon?family=Material+Icons",
+        "https://fonts.gstatic.com/s/materialicons/**"
+      ],
       "cacheConfig": {
         "strategy": "performance",
-        "maxSize": 100,
+        "maxSize": 50,
         "maxAge": "1d",
         "timeout": "10s"
       }

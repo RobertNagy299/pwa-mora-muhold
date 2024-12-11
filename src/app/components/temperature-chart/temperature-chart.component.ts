@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {AuthService} from '../../services/auth.service';
 import {MatIcon} from '@angular/material/icon';
@@ -20,7 +20,8 @@ import {GradientTextDirective} from '../../directives/gradient-text.directive';
     GradientTextDirective
   ],
   templateUrl: './temperature-chart.component.html',
-  styleUrl: './temperature-chart.component.scss'
+  styleUrl: './temperature-chart.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TemperatureChartComponent implements OnInit, OnDestroy {
 

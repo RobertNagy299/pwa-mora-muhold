@@ -1,11 +1,11 @@
 {
-  "name": "My Progressive Web App",
-  "short_name": "PWA",
+  "name": "Mora Satellite Monitoring App",
+  "short_name": "MoraPWA",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3f51b5",
-  "description": "A simple progressive web app.",
+  "description": "A simple progressive web app, used to simulate a satellite monitoring application, where users can view the data that the satellite's sensors have collected.",
   "icons": [
     {
       "src": "assets/icons/icon-72x72.png",

@@ -1,8 +1,8 @@
-import {Component, inject, Injectable, OnDestroy, OnInit, signal} from '@angular/core';
-import { UptimeService } from '../../services/uptime.service';
+import {ChangeDetectionStrategy, Component, inject, Injectable, OnInit, signal} from '@angular/core';
+import {UptimeService} from '../../services/uptime.service';
 import {interval, Subscription} from 'rxjs';
-import { UptimeTransformPipe } from '../../pipes/uptime-transform.pipe';
-import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
+import {UptimeTransformPipe} from '../../pipes/uptime-transform.pipe';
+import {UntilDestroy} from '@ngneat/until-destroy';
 import {IndexedDBService} from '../../services/indexed-db.service';
 import {ConstantsEnum} from '../../utils/constants';
 import {AuthService} from '../../services/auth.service';
@@ -18,9 +18,10 @@ import {GradientTextDirective} from '../../directives/gradient-text.directive';
   standalone: true,
   templateUrl: './home.component.html',
   imports: [UptimeTransformPipe, AsyncPipe, NgIf, GradientTextDirective],
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements OnInit {
   uptimeService = inject(UptimeService);
   indexedDBService = inject(IndexedDBService);
   public count = signal(0);
@@ -49,27 +50,23 @@ export class HomeComponent implements OnInit, OnDestroy {
     // First, try to fetch the counter value from IndexedDB
     try {
       const storedCounter = await this.indexedDBService.getUptime();
-      if (storedCounter !== null && storedCounter !== undefined && storedCounter > 0) {
+      if (storedCounter !== null) {
         this.count.set(storedCounter);  // Use stored value from IndexedDB
+
       } else {
         // If IndexedDB doesn't have a value, fetch from Firebase
         const counter = await this.uptimeService.getCounterValue();
         this.count.set(counter);
         // Save the counter value to IndexedDB on successful fetch
         await this.indexedDBService.saveUptime(counter);
+
       }
       this.startIncrementing();
     } catch (err) {
-     // console.error('Failed to fetch from Firebase or IndexedDB', err);
+      console.error('Failed to fetch from Firebase or IndexedDB', err);
       // Start incrementing even if the fetch fails
       this.startIncrementing();
     }
-  }
-
-
-  ngOnDestroy() {
-    console.log("Home ngOnDestroy runs!");
-    // this.saveCounterValue();
   }
 
   async saveCounterValue() {
@@ -95,10 +92,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.count.update(value => value + 1);
     if (!this.updating) {
       this.updating = true;
-      //console.log("We are inside increment !this.updating if");
+
       this.saveCounterValue().finally(() => {
 
-       // console.log("inside increment function saveCounterValue.finally()");
+
         this.updating = false;
       });
     }

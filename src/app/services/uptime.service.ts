@@ -14,7 +14,7 @@ export class UptimeService {
 
   private db: Database = inject(Database);
   private resetCounterSubject = new Subject<void>();
-  private fetchWithTimeout = fetchWithTimeout;
+
 
   constructor(private indexedDBService: IndexedDBService) {}
 
@@ -23,8 +23,8 @@ export class UptimeService {
   public async saveCounterValue(seconds: number): Promise<void> {
     const counterRef = ref(this.db, ConstantsEnum.uptimeObjectStoreName);  // The path to store the counter value
     try {
-      await this.fetchWithTimeout( set(counterRef, seconds), ConstantsEnum.timeoutLimit );
-      await this.indexedDBService.clearUptime();
+      await fetchWithTimeout( set(counterRef, seconds), ConstantsEnum.timeoutLimit );
+      await this.indexedDBService.saveUptime(seconds);
       // Save the new value to the 'counter' key
     } catch (error) {
      // console.log("Error saving uptime to Firebase Realtime Database: " + error);
@@ -47,13 +47,12 @@ export class UptimeService {
   // Get the counter value from Realtime Database
   public async getCounterValue(): Promise<number> {
     const counterRef = ref(this.db, ConstantsEnum.uptimeObjectStoreName);  // The path to retrieve the counter value
-    const snapshot = await get(counterRef);
+    const snapshot = await fetchWithTimeout( get(counterRef), ConstantsEnum.timeoutLimit );
     if (snapshot.exists()) {
+      //console.log("Uptime Exists in firebase");
       return snapshot.val(); // Return the counter value
     } else {
-      // console.log('No counter value found.');
-
-      console.log("Counter doesn't exist!");
+      // console.log('No counter value found. in firebase');
 
       return 0; // Return 0 if no counter value exists
     }

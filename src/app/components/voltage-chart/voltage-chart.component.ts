@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
 import {VoltageFirebaseService} from '../../services/voltage-firebase.service';
 import {Subscription} from 'rxjs';
 import {AuthService} from '../../services/auth.service';
@@ -20,7 +20,8 @@ import {GradientTextDirective} from '../../directives/gradient-text.directive';
     GradientTextDirective
   ],
   templateUrl: './voltage-chart.component.html',
-  styleUrl: './voltage-chart.component.scss'
+  styleUrl: './voltage-chart.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VoltageChartComponent implements OnInit, OnDestroy {
 

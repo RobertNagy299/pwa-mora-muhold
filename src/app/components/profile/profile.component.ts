@@ -1,4 +1,4 @@
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {MatError, MatFormField, MatLabel} from '@angular/material/form-field';
 import {AsyncPipe, NgIf} from '@angular/common';
 import {MatButton} from '@angular/material/button';
@@ -39,7 +39,8 @@ import {ConnectivityService} from '../../services/connectivity.service';
     AsyncPipe
   ],
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.scss']
+  styleUrls: ['./profile.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   userData: User | null = null;
@@ -132,24 +133,21 @@ export class ProfileComponent implements OnInit, OnDestroy {
             }
           });
         }, error => {
-          console.log(error.toString());
+         // console.log(error.toString());
           if(error.toString().includes("weak-password")){
-            console.log("In weak password");
+           // console.log("In weak password");
             this.snackBar.open('Failed to change password. New Password must be at least 6 characters long', 'Close', {
               duration: 3000,
               panelClass: ['error-snackbar']
             });
           } else if(error.toString().includes("invalid-credential")) {
-            console.log("In invalid cred");
+          //  console.log("In invalid cred");
             this.snackBar.open('Failed to change password. Current password does not match the one you entered', 'Close', {
               duration: 3000,
               panelClass: ['error-snackbar']
             });
           }
-          // this.snackBar.open('Failed to change password.', 'Close', {
-          //   duration: 3000,
-          //   panelClass: ['error-snackbar']
-          // });
+
         });
       }
     }
@@ -167,9 +165,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
           });
           // Additional logic after successful deletion
         }, error => {
-          console.log(error.toString());
+        //  effect(()=>console.log(error.toString()));
           if (error.toString().includes("wrong-password")) {
-            console.log("Wrong password");
+           // console.log("Wrong password");
             this.snackBar.open('Failed to delete user. The password you entered is incorrect', 'Close', {
               duration: 3000,
               panelClass: ['error-snackbar']
