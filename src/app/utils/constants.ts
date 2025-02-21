@@ -3,6 +3,7 @@ export enum ConstantsEnum {
   voltageObjectStoreName = "voltageReadings",
   temperatureObjectStoreName = "temperatureReadings",
   uptimeObjectStoreName = "uptime",
-  dataLimit = 30
+  dataLimit = 30,
+  splashScreenDisplayTime = 2000, 
 
 }

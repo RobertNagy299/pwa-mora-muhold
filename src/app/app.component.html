@@ -1,5 +1,11 @@
-<app-splash-screen></app-splash-screen>
-<div class="main-app-container">
-   <app-main></app-main>
-</div>
+
+@defer () {
+   <div class="main-app-container">
+      <app-main></app-main>
+   </div>
+} @loading (minimum 2s) {
+   <app-splash-screen></app-splash-screen>
+  
+}
+
 

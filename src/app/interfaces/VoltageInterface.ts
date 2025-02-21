@@ -1,4 +1,4 @@
 export interface VoltageInterface {
   voltage: number,
-  time: number,
+  uptime: number,
 }

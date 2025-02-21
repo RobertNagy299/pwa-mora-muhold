@@ -4,6 +4,7 @@ import { SplashScreenComponent } from "./components/splash-screen/splash-screen.
 import {MainComponent} from './components/main/main.component';
 import {HomeComponent} from './components/home/home.component';
 
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -14,7 +15,7 @@ import {HomeComponent} from './components/home/home.component';
 export class AppComponent implements OnDestroy   {
   title = 'Mora Satellite';
   private homeComponent: HomeComponent = inject(HomeComponent);
-
+  
   // Unsubscribe from global Observables
   ngOnDestroy() {
     if(this.homeComponent.intervalSubscription){

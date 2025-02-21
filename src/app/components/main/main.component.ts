@@ -22,7 +22,7 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatList, MatListItem, MatNavList} from '@angular/material/list';
 import {MatDivider} from '@angular/material/divider';
 import {Router, RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
-
+import { AsyncPipe } from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatLine} from '@angular/material/core';
@@ -32,12 +32,15 @@ import {MatMenu, MatMenuItem} from '@angular/material/menu';
 import {AuthService} from '../../services/auth.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
+import { concatMap, finalize, map, mergeMap, Observable, of, tap } from 'rxjs';
+import { VoltageFirebaseService } from '../../services/voltage-firebase.service';
 
 @UntilDestroy()
 @Component({
   selector: 'app-main',
   standalone: true,
   imports: [
+    AsyncPipe,
     MatSidenavContainer,
     MatSidenavContent,
     MatSidenavModule,
@@ -69,50 +72,55 @@ import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 export class MainComponent implements OnInit, AfterViewInit{
 
   switchTheme = new FormControl(false);
-  isLoggedIn: boolean = false;
-
-  constructor(private router: Router ,private snackBar: MatSnackBar,private authService: AuthService ,private themeService: ThemeService, @Inject(PLATFORM_ID) private platformId: Object) {}
+ 
+  
+  constructor(
+    private router: Router,
+    private snackBar: MatSnackBar,
+    protected authService: AuthService,
+    private themeService: ThemeService, 
+    @Inject(PLATFORM_ID) private platformId: Object,
+   
+  ) {
+     
+  }
 
   ngOnInit() {
-    this.authService.authState$.pipe(untilDestroyed(this)).subscribe(isLoggedIn => {
-      this.isLoggedIn = isLoggedIn;
-    });
-    this.themeService.isDarkTheme.pipe(untilDestroyed(this)).subscribe((isDark) => {
+   
+    
+    this.themeService.isDarkTheme
+    .pipe(untilDestroyed(this))
+    .subscribe((isDark) => {
       this.switchTheme.setValue(isDark, { emitEvent: false });
-      this.updateTheme(isDark);
+      this.themeService.updateTheme(isDark);
     });
 
-    this.switchTheme.valueChanges.pipe(untilDestroyed(this)).subscribe((isDark) => {
+    this.switchTheme.valueChanges
+    .pipe(untilDestroyed(this))
+    .subscribe((isDark) => {
       if (isDark !== null) {
         this.themeService.toggleTheme(isDark);
       }
     });
   }
   logout(): void {
-    this.authService.logout().pipe(untilDestroyed(this)).subscribe(async () => {
-      this.snackBar.open('Logged out successfully!', 'Close', {
-        duration: 3000,
-        panelClass: ['success-snackbar']
-      });
-      // Optionally, navigate to login page or home page
-      await this.router.navigate(['/home']);
-    });
+    this.authService.logout()
+    .pipe(
+    
+      tap(() => {
+        this.snackBar.open('Logged out successfully!', 'Close', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+      }),
+      untilDestroyed(this),
+      finalize(() =>  this.router.navigate(['/home'])),
+     
+      
+    )
+    .subscribe();
   }
-  updateTheme(isDark: boolean) {
-    if (isPlatformBrowser(this.platformId) && document !== undefined && typeof document !== 'undefined') {
-      const body = document.body;
-      if (isDark) {
-        body.classList.add('theme-dark');
-        body.classList.remove('theme-light');
-      } else {
-        body.classList.add('theme-light');
-        body.classList.remove('theme-dark');
-      }
 
-    }
-
-
-  }
 
 
   @ViewChild('darkModeSwitch', { read: ElementRef }) element: ElementRef | undefined;

@@ -1,23 +1,23 @@
-import {ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {MatError, MatFormField, MatLabel} from '@angular/material/form-field';
-import {AsyncPipe, NgIf} from '@angular/common';
-import {MatButton} from '@angular/material/button';
-import {MatInput} from '@angular/material/input';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatCard, MatCardContent, MatCardTitle} from '@angular/material/card';
-import {AuthService} from '../../services/auth.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {User} from '../../interfaces/User';
-import {TemperatureFirebaseService} from '../../services/temperature-firebase.service';
-import {VoltageFirebaseService} from '../../services/voltage-firebase.service';
-import {UptimeService} from '../../services/uptime.service';
-import {MatDivider} from '@angular/material/divider';
-import {HomeComponent} from '../home/home.component';
-import {Subscription} from 'rxjs';
-import {MatIcon} from '@angular/material/icon';
-import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
-import {Router} from '@angular/router';
-import {ConnectivityService} from '../../services/connectivity.service';
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { MatButton } from '@angular/material/button';
+import { MatInput } from '@angular/material/input';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatCard, MatCardContent, MatCardTitle } from '@angular/material/card';
+import { AuthService } from '../../services/auth.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { User } from '../../interfaces/User';
+import { TemperatureFirebaseService } from '../../services/temperature-firebase.service';
+import { VoltageFirebaseService } from '../../services/voltage-firebase.service';
+import { UptimeService } from '../../services/uptime.service';
+import { MatDivider } from '@angular/material/divider';
+import { HomeComponent } from '../home/home.component';
+import { catchError, from, map, merge, mergeAll, mergeMap, Observable, of, Subscription, switchMap, tap } from 'rxjs';
+import { MatIcon } from '@angular/material/icon';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { Router } from '@angular/router';
+import { ConnectivityService } from '../../services/connectivity.service';
 
 @UntilDestroy()
 @Component({
@@ -47,7 +47,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   passwordForm!: FormGroup;
   deleteForm!: FormGroup;
   private homeComponent = inject(HomeComponent);
-  private authSubscription : Subscription | null = null;
+  private authSubscription: Subscription | null = null;
 
   constructor(
     private authService: AuthService,
@@ -82,37 +82,96 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
-  async resetData(): Promise<void> {
-    if (confirm('Are you sure you want to reset the data?')) {
-      try {
+  
+  // OLD BUT GOLD
 
-        await this.voltageService.deleteAllVoltageReadings();
-        await this.temperatureService.deleteAllTemperatureReadings();
+  // async resetData(): Promise<void> {
+  //   if (confirm('Are you sure you want to reset the data?')) {
+  //     try {
 
-        await this.uptimeService.resetUptimeCounter();
-        this.homeComponent.count.set(0);
+  //       await this.voltageService.deleteAllVoltageReadings();
+  //       await this.temperatureService.deleteAllTemperatureReadings();
 
-        this.snackBar.open('Data reset successfully!', 'Close', {
-          duration: 3000,
-          panelClass: ['success-snackbar']
-        });
-        await this.router.navigate(['/home']);
-      } catch (error) {
-        console.error('Failed to reset data', error);
-        this.snackBar.open('Failed to reset data.', 'Close', {
-          duration: 3000,
-          panelClass: ['error-snackbar']
-        });
-      }
+  //       await this.uptimeService.resetUptimeCounter();
+  //       this.homeComponent.count.set(0);
+
+  //       this.snackBar.open('Data reset successfully!', 'Close', {
+  //         duration: 3000,
+  //         panelClass: ['success-snackbar']
+  //       });
+  //       await this.router.navigate(['/home']);
+  //     } catch (error) {
+  //       console.error('Failed to reset data', error);
+  //       this.snackBar.open('Failed to reset data.', 'Close', {
+  //         duration: 3000,
+  //         panelClass: ['error-snackbar']
+  //       });
+  //     }
+  //   }
+  // }
+
+
+  // NEW VERSION
+  resetData() : Observable<void> {
+    if (confirm('Are you sure you want to reset the data?'))  {
+      
+        merge(
+          this.voltageService.deleteAllVoltageReadings(),
+          this.temperatureService.deleteAllTemperatureReadings(),
+          this.uptimeService.resetUptimeCounter().pipe(
+            tap(() => {
+              this.homeComponent.count.set(0)
+            })
+          ),
+        ).pipe(
+          tap(() => {
+             
+            this.snackBar.open('Data reset successfully!', 'Close', {
+              duration: 3000,
+              panelClass: ['success-snackbar']
+            });
+
+          }),
+
+          map((/*success*/) => {
+            return this.router.navigate(['/home']);
+          }),
+
+          catchError((error) => {
+            console.error('Failed to reset data', error.message);
+            this.snackBar.open('Failed to reset data.', 'Close', {
+              duration: 3000,
+              panelClass: ['error-snackbar']
+            });
+
+            return of(null)
+          }),
+
+         
+
+        ).subscribe()
+
+       
+
+
+
+      
     }
+    return of();
   }
+
 
   changePassword(): void {
     if (this.passwordForm.valid) {
       const currentPassword = this.passwordForm.get('currentPassword')?.value;
       const newPassword = this.passwordForm.get('newPassword')?.value;
       if (currentPassword && newPassword) {
-        this.authService.changePassword(currentPassword, newPassword).pipe(untilDestroyed(this)).subscribe(() => {
+        this.authService.changePassword(currentPassword, newPassword).pipe(
+          catchError(error=>{
+          return  of(null);
+          }),
+          untilDestroyed(this)
+        ).subscribe(() => {
           this.snackBar.open('Password changed successfully!', 'Close', {
             duration: 3000,
             panelClass: ['success-snackbar']
@@ -133,15 +192,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
             }
           });
         }, error => {
-         // console.log(error.toString());
-          if(error.toString().includes("weak-password")){
-           // console.log("In weak password");
+          // console.log(error.toString());
+          if (error.toString().includes("weak-password")) {
+            // console.log("In weak password");
             this.snackBar.open('Failed to change password. New Password must be at least 6 characters long', 'Close', {
               duration: 3000,
               panelClass: ['error-snackbar']
             });
-          } else if(error.toString().includes("invalid-credential")) {
-          //  console.log("In invalid cred");
+          } else if (error.toString().includes("invalid-credential")) {
+            //  console.log("In invalid cred");
             this.snackBar.open('Failed to change password. Current password does not match the one you entered', 'Close', {
               duration: 3000,
               panelClass: ['error-snackbar']
@@ -165,9 +224,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
           });
           // Additional logic after successful deletion
         }, error => {
-        //  effect(()=>console.log(error.toString()));
+          //  effect(()=>console.log(error.toString()));
           if (error.toString().includes("wrong-password")) {
-           // console.log("Wrong password");
+            // console.log("Wrong password");
             this.snackBar.open('Failed to delete user. The password you entered is incorrect', 'Close', {
               duration: 3000,
               panelClass: ['error-snackbar']
@@ -184,7 +243,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if(this.authSubscription) {
+    if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
   }

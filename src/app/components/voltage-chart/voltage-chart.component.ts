@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
 import {VoltageFirebaseService} from '../../services/voltage-firebase.service';
-import {Subscription} from 'rxjs';
+import {map, Observable, of, Subscription, tap} from 'rxjs';
 import {AuthService} from '../../services/auth.service';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton} from '@angular/material/button';
@@ -8,6 +8,8 @@ import {NgIf} from '@angular/common';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {ConstantsEnum} from '../../utils/constants';
 import {GradientTextDirective} from '../../directives/gradient-text.directive';
+import { VoltageInterface } from '../../interfaces/VoltageInterface';
+import { AsyncPipe } from '@angular/common';
 
 @UntilDestroy()
 @Component({
@@ -17,7 +19,8 @@ import {GradientTextDirective} from '../../directives/gradient-text.directive';
     MatIcon,
     MatButton,
     NgIf,
-    GradientTextDirective
+    GradientTextDirective,
+    AsyncPipe
   ],
   templateUrl: './voltage-chart.component.html',
   styleUrl: './voltage-chart.component.scss',
@@ -26,35 +29,71 @@ import {GradientTextDirective} from '../../directives/gradient-text.directive';
 export class VoltageChartComponent implements OnInit, OnDestroy {
 
   private voltageSubscription: Subscription | null = null;
-  protected isLoggedIn = false;
-
-  constructor(private authService: AuthService ,private voltageChartService: VoltageFirebaseService,
-              private el: ElementRef) {}
+  
+  constructor(
+    protected authService: AuthService,
+    private voltageFirebaseService: VoltageFirebaseService,
+    private el: ElementRef,
+  ) {}
 
 
   ngOnInit(): void {
     const canvas = this.el.nativeElement.querySelector('#realtimeChart');
 
     // Initialize the chart
-    this.voltageChartService.createChart(canvas);
+    this.voltageFirebaseService.createChart(canvas);
 
+    this.voltageFirebaseService.generateVoltageData().pipe(untilDestroyed(this)).subscribe();
+
+    
     // Fetch historical data and update the chart
-    this.voltageChartService.fetchHistoricalData(ConstantsEnum.dataLimit).then((historicalData) => {
-      this.voltageChartService.updateChart(historicalData);
-    });
+    
+    /**
+     * OLD BUT GOLD
+     */
+
+    // this.voltageChartService.fetchHistoricalData(ConstantsEnum.dataLimit).then((historicalData) => {
+    //   this.voltageChartService.updateChart(historicalData);
+    // });
+
+    // ok
+    this.voltageFirebaseService.fetchHistoricalData(ConstantsEnum.dataLimit)
+    .pipe(
+      tap((data: VoltageInterface[]) => {
+      //  console.log(`inside historical fetch, data = ${JSON.stringify(data)}`) SEEMS FINE
+        this.voltageFirebaseService.updateChart(data);
+      })
+    ).subscribe()
+
+
     // Listen for voltage updates and update the chart
-    this.voltageSubscription = this.voltageChartService.listenForVoltageUpdates().subscribe((data) => {
-      this.voltageChartService.updateChart(data);
-    });
+    // old but gold
+    // this.voltageSubscription = this.voltageChartService.listenForVoltageUpdates().subscribe((data) => {
+    //   this.voltageChartService.updateChart(data);
+    // });
+
+    this.voltageSubscription = this.voltageFirebaseService.listenForVoltageUpdates()
+    .pipe(
+      tap((data: VoltageInterface[]) => {
+        console.log(`Data inside voltageSubscription = ${JSON.stringify(data)}`); // ERROR, THIS SHOULD NOT BE UNDEFINED
+        this.voltageFirebaseService.updateChart(data);
+      })
+    ).subscribe()
+
 
     // Check authentication status
-    this.authService.authState$.pipe(untilDestroyed(this)).subscribe(isLoggedIn => {
-      this.isLoggedIn = isLoggedIn;
-    });
+   
   }
   // Method to trigger download for logged-in users
-  async downloadVoltageData(): Promise<void> {
-    await this.voltageChartService.downloadVoltageData();
+  
+  /**OLD BUT GOLD */
+  
+  // async downloadVoltageData(): Promise<void> {
+  //   await this.voltageChartService.downloadVoltageData();
+  // }
+
+  downloadVoltageData() : void {
+     this.voltageFirebaseService.downloadVoltageData().subscribe();
   }
 
    ngOnDestroy(): void {

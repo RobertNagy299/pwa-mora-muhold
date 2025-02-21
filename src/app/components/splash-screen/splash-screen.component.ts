@@ -1,6 +1,8 @@
 import {Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {NgIf, NgStyle} from "@angular/common";
-
+import {first, interval, takeUntil, timer} from 'rxjs'
+import {ConstantsEnum } from '../../utils/constants';
+import { ThemeService } from '../../services/theme.service';
 @Component({
   selector: 'app-splash-screen',
   standalone: true,
@@ -15,32 +17,34 @@ import {NgIf, NgStyle} from "@angular/common";
 
 export class SplashScreenComponent implements OnInit {
 
-  private splashIntervalBeginning = 2000; //original: 2000
-  private splashIntervalEnding = 3000;// original: 3000
+  // private splashIntervalBeginning = 2000; //original: 2000
+  // private splashIntervalEnding = 3000;// original: 3000
 
 
-  private randomIntFromInterval = (min:number, max:number) :number => { // min and max included
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  }
+  // private randomIntFromInterval = (min:number, max:number) :number => { // min and max included
+  //   return Math.floor(Math.random() * (max - min + 1) + min);
+  // }
   showSplash: boolean = true;
   scale: number = 1;
   opacity: number = 1 ;
-  innerScale: number = 0.0;
-  innerOpacity: number = 0 ;
-  ngOnInit(): void {
-    setTimeout(() => {
-      this.innerScale = 1;
-      this.innerOpacity = 1;
-    },100)
-    setTimeout(() => {
-      this.scale = 3;
-      this.opacity = 0;
-      setTimeout(() => {
-        this.showSplash = !this.showSplash;
-      }, 1500)
+  innerScale: number = 1.0;
+  innerOpacity: number = 1 ;
 
-     // this.windowWidth = "-" + window.innerWidth + 'px';
-    }, this.randomIntFromInterval(this.splashIntervalBeginning,this.splashIntervalEnding))
+  constructor(private themeService : ThemeService) {}
+
+  ngOnInit(): void {
+    
+    // True = dark mode 
+    const theme : boolean = this.themeService.getStoredThemePreference();
+    this.themeService.updateTheme(theme)
+    timer(ConstantsEnum.splashScreenDisplayTime - 400)
+    .pipe(
+      first()
+    )
+    .subscribe(() => {
+      this.scale = 3;
+      this.opacity = 0
+    });
 
   }
 }

@@ -38,33 +38,21 @@
 //     });
 //   }
 // }
-import {Injectable, OnDestroy} from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { distinctUntilChanged, fromEvent, map, merge, shareReplay, startWith, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ConnectivityService implements OnDestroy {
-  private onlineStatusSubject = new BehaviorSubject<boolean>(navigator.onLine);
-  public onlineStatus$: Observable<boolean> = this.onlineStatusSubject.asObservable();
+export class ConnectivityService {
 
-  private onlineListener = () => this.updateOnlineStatus(true);
-  private offlineListener = () => this.updateOnlineStatus(false);
-  constructor() {
-    this.initializeOnlineStatusListener();
-  }
-
-  private initializeOnlineStatusListener(): void {
-    window.addEventListener('online', this.onlineListener);
-    window.addEventListener('offline', this.offlineListener);
-  }
-
-  ngOnDestroy() {
-    window.removeEventListener('online', this.onlineListener);
-    window.removeEventListener('offline', this.offlineListener);
-  }
-
-  private updateOnlineStatus(isOnline: boolean): void {
-    this.onlineStatusSubject.next(isOnline);
-  }
+  public readonly isOnline$ = merge(
+    fromEvent(window, 'online').pipe(map(() => true)),
+    fromEvent(window, 'offline').pipe(map(() => false)),
+  ).pipe(
+    startWith(navigator.onLine ?? true),
+    tap(x => console.log('asd', x)),
+    distinctUntilChanged(),
+    shareReplay(1)
+  )
 }

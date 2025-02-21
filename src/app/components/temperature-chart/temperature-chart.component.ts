@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
-import {Subscription} from 'rxjs';
+import {filter, Subscription, tap} from 'rxjs';
 import {AuthService} from '../../services/auth.service';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton} from '@angular/material/button';
@@ -8,6 +8,7 @@ import {TemperatureFirebaseService} from '../../services/temperature-firebase.se
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {ConstantsEnum} from '../../utils/constants';
 import {GradientTextDirective} from '../../directives/gradient-text.directive';
+import { TemperatureInterface } from '../../interfaces/TemperatureInterface';
 
 @UntilDestroy()
 @Component({
@@ -39,13 +40,34 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
     this.temperatureChartService.createChart(canvas);
 
     // Fetch historical data and update the chart
-    this.temperatureChartService.fetchHistoricalData(ConstantsEnum.dataLimit).then((historicalData) => {
-      this.temperatureChartService.updateChart(historicalData);
-    });
+    
+    // OLD BUT GOLD
+
+    // this.temperatureChartService.fetchHistoricalData(ConstantsEnum.dataLimit).then((historicalData) => {
+    //   this.temperatureChartService.updateChart(historicalData);
+    // });
+
+    this.temperatureChartService.fetchHistoricalData(ConstantsEnum.dataLimit).pipe(
+      tap((data: TemperatureInterface[]) => {
+        this.temperatureChartService.updateChart(data);
+      })
+    ).subscribe()
+
     // Listen for voltage updates and update the chart
-    this.temperatureSubscription = this.temperatureChartService.listenForTemperatureUpdates().subscribe((data) => {
-      this.temperatureChartService.updateChart(data);
-    });
+    // OLD BUT GOLD??
+    // this.temperatureSubscription = this.temperatureChartService.listenForTemperatureUpdates().subscribe((data) => {
+    //   this.temperatureChartService.updateChart(data);
+    // });
+
+    this.temperatureSubscription = this.temperatureChartService.listenForTemperatureUpdates()
+    .pipe(
+      
+      filter((data) => data !== undefined),
+
+      tap((data) => {
+        this.temperatureChartService.updateChart(data);
+      })
+    ).subscribe()
 
     // Check authentication status
     this.authService.authState$.pipe(untilDestroyed(this)).subscribe(isLoggedIn => {
@@ -53,8 +75,14 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
     });
   }
   // Method to trigger download for logged-in users
-  async downloadTemperatureData(): Promise<void> {
-    await this.temperatureChartService.downloadTemperatureData();
+  
+  // OLD BUT GOLD
+  // async downloadTemperatureData(): Promise<void> {
+  //   await this.temperatureChartService.downloadTemperatureData();
+  // }
+
+  downloadTemperatureData() : void {
+    this.temperatureChartService.downloadTemperatureData().subscribe()
   }
 
   ngOnDestroy(): void {

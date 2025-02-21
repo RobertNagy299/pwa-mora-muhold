@@ -4,7 +4,7 @@
   </button>
   <span class="main-brand-title">Móra Satellite</span>
   <span class="spacer"></span>
-  <button class="profile-button" *ngIf="isLoggedIn" routerLink="/profile" mat-icon-button>
+  <button class="profile-button" *ngIf="this.authService.isLoggedIn$ | async" routerLink="/profile" mat-icon-button>
     <mat-icon class="navbar-icon">account_circle</mat-icon>
   </button>
   <mat-slide-toggle [formControl]="switchTheme" #darkModeSwitch></mat-slide-toggle>
@@ -32,19 +32,19 @@
         </button>
       </mat-list-item>
       <mat-divider [vertical]="true" role="separator" style="height: calc(100vh - 304px); border-right-style: none;"></mat-divider>
-      <mat-list-item *ngIf="!isLoggedIn" class="bottom-nav-link" style="margin-top: auto;">
+      <mat-list-item *ngIf="!( this.authService.isLoggedIn$ | async)" class="bottom-nav-link" style="margin-top: auto;">
         <button class="button-in-sidenav" mat-button routerLink="/login" routerLinkActive="active-link">
           <mat-icon>login</mat-icon>
           Log in
         </button>
       </mat-list-item>
-      <mat-list-item *ngIf="!isLoggedIn" class="bottom-nav-link">
+      <mat-list-item *ngIf="!(this.authService.isLoggedIn$ | async)" class="bottom-nav-link">
         <button class="button-in-sidenav" mat-button routerLink="/registration" routerLinkActive="active-link">
           <mat-icon>app_registration</mat-icon>
           Register
         </button>
       </mat-list-item>
-      <mat-list-item *ngIf="isLoggedIn" class="bottom-nav-link" style="margin-top: 50px;">
+      <mat-list-item *ngIf="this.authService.isLoggedIn$ | async" class="bottom-nav-link" style="margin-top: 50px;">
         <button class="button-in-sidenav" mat-button (click)="logout()">
           <mat-icon>logout</mat-icon>
           Log out

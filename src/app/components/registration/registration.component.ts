@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { ReactiveFormsModule } from '@angular/forms';
 import {Router} from '@angular/router';
-import {Subscription} from 'rxjs';
+import {shareReplay, Subscription} from 'rxjs';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {MatSnackBar} from '@angular/material/snack-bar';
 
@@ -60,9 +60,15 @@ export class RegistrationComponent implements OnInit, OnDestroy {
     });
   }
   onSubmit() {
+
+
     this.submitted = true; // Mark the form as submitted
     if (this.registerForm.valid) {
       const { username, email, password } = this.registerForm.value;
+      const registered$ = this.authService.register(username, email, password).pipe(
+        shareReplay(1)
+      );
+      
       this.authService.register(username, email, password).pipe(untilDestroyed(this)).subscribe(
         () => {
 
