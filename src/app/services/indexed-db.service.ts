@@ -23,22 +23,10 @@ export class IndexedDBService {
     
   }
 
-  // OLD CODE -> WORKS BUT USES AYNSC AWAIT
-  // async initDB(): Promise<IDBPDatabase> {
-  //   if (!this.db) {
-  //     this.db = await openDB('my-database', 1, {
-  //       upgrade(db) {
-  //         db.createObjectStore('voltageReadings', { keyPath: 'uptime' });  // Use uptime as the key
-  //         db.createObjectStore('temperatureReadings', { keyPath: 'uptime' });
-  //         db.createObjectStore('uptime', { keyPath: 'id', autoIncrement: true });  // New store for uptime
-  //       },
-  //     });
-  //   }
-  //   return this.db;
-  // }
 
 
-  // INITDB MOVED TO RXJS (experimental)
+
+  // INITDB MOVED TO RXJS 
   
   initDB(): Observable<IDBPDatabase<unknown>> {
     return from(
@@ -57,17 +45,7 @@ export class IndexedDBService {
    * ==================================
    */
 
-  // OLD SAVEUPTIME, WORKS FINE but uses async await
-
-  // Save uptime value to IndexedDB
-  // async saveUptime(value: number) {
-  //   const db = await this.dbPromise;
-  //   const tx = db.transaction(ConstantsEnum.uptimeObjectStoreName, 'readwrite');
-  //   const store = tx.objectStore(ConstantsEnum.uptimeObjectStoreName);
-  //   await store.put({ id: 1, value });  // Save with a fixed id for simplicity
-  //   await tx.done;
-  // }
-
+  
   // NEW RXJS SAVEUPTIME
   saveUptime(value: number) : Observable<boolean> {
        return this.dbObservable$
@@ -100,16 +78,6 @@ export class IndexedDBService {
 
 
   // Get uptime value from IndexedDB
-  // OLD GETUPTIME WITH ASYNC, WORKS!
-
-  // async getUptime(): Promise<number | null> {
-  //   const db = await this.dbObservable$;
-  //   const tx = db.transaction(ConstantsEnum.uptimeObjectStoreName, 'readonly');
-  //   const store = tx.objectStore(ConstantsEnum.uptimeObjectStoreName);
-  //   const result = await store.get(1);  // Retrieve the uptime value by id
-  //   await tx.done;
-  //   return result ? result.value : null;  // Return the value or null if not found
-  // }
 
   //NEW GETUPTIME WITH OBSERVABLES
   getUpTime(): Observable<number> {
@@ -146,15 +114,7 @@ export class IndexedDBService {
     )
   }
 
-  // Optionally clear uptime data
-  // CLEAR UPTIME ASYNC AWAIT - WORKS FINE
-  // async clearUptime() {
-  //   const db = await this.dbObservable$;
-  //   const tx = db.transaction(ConstantsEnum.uptimeObjectStoreName, 'readwrite');
-  //   const store = tx.objectStore(ConstantsEnum.uptimeObjectStoreName);
-  //   await store.clear();
-  //   await tx.done;
-  // }
+  // clear uptime data
 
   clearUpTime(): Observable<boolean> {
     return this.dbObservable$
@@ -189,15 +149,7 @@ export class IndexedDBService {
    */
 
   // Save voltage reading to IndexedDB with uptime as the key
-  // WORKS (OLD VERSION)
-  // async addVoltageReading(reading: any) {
-  //   const db = await this.dbObservable$;
-  //   const tx = db.transaction(ConstantsEnum.voltageObjectStoreName, 'readwrite');
-  //   const store = tx.objectStore(ConstantsEnum.voltageObjectStoreName);
-  //   await store.put({ id: reading.uptime, uptime: reading.uptime, voltage: reading.voltage });  // Save with uptime as the key
-  //   await tx.done;
-  // }
-
+  
   addVoltageReading(reading: VoltageInterface) : Observable<boolean> {
     return this.dbObservable$
     .pipe(
@@ -225,16 +177,7 @@ export class IndexedDBService {
 
 
   // Get the last 'N' voltage readings from IndexedDB excluding the last 2
-  // OLD VERSION - WORKS
-  // async getLastNVoltageReadingsExcludingLast2(limit: number): Promise<any[]> {
-  //   const db = await this.dbObservable$;
-  //   const allReadings = await db.getAll(ConstantsEnum.voltageObjectStoreName);
-  //   if (allReadings.length <= 2) {
-  //     return [];
-  //   }
-  //   return allReadings.slice(-limit - 2, -2);
-  // }
-
+ 
   getLastNVoltageReadingsExcludingLast2(limit: number) : Observable<VoltageInterface[]> {
     return this.dbObservable$
     .pipe(
@@ -260,13 +203,6 @@ export class IndexedDBService {
   }
 
   // Get all voltage readings from IndexedDB
-  
-  // ASYNC AWAIT OLD VERSION: WORKS FINE
-
-  // async getAllVoltageReadings() {
-  //   const db = await this.dbObservable$;
-  //   return db.getAll(ConstantsEnum.voltageObjectStoreName);
-  // }
 
   getAllVoltageReadings() : Observable< VoltageInterface[] > {
     return this.dbObservable$
@@ -291,13 +227,6 @@ export class IndexedDBService {
 
 
   // Clear voltage readings from IndexedDB
-  
-  // OLD VERSION, WORKS FINE
-  
-  // async clearVoltageReadings() {
-  //   const db = await this.dbObservable$;
-  //   return db.clear(ConstantsEnum.voltageObjectStoreName);
-  // }
 
   clearVoltageReadings() : Observable<boolean> {
     return this.dbObservable$
@@ -326,16 +255,6 @@ export class IndexedDBService {
    */
 
   // Save temperature reading to IndexedDB with uptime as the key
- 
-  // OLD VERSION - WORKS FINE
- 
-  // async addTemperatureReading(reading: any) {
-  //   const db = await this.dbObservable$;
-  //   const tx = db.transaction(ConstantsEnum.temperatureObjectStoreName, 'readwrite');
-  //   const store = tx.objectStore(ConstantsEnum.temperatureObjectStoreName);
-  //   await store.put({ id: reading.uptime, uptime: reading.uptime, temperature: reading.temperature });  // Save with uptime as the key
-  //   await tx.done;
-  // }
 
   addTemperatureReading(reading: TemperatureInterface) : Observable<boolean> {
     return this.dbObservable$
@@ -363,11 +282,6 @@ export class IndexedDBService {
   }
 
   // Delete all temperature readings from IndexedDB
-  // OLD VERSION, WORKS FINE
-  // async clearTemperatureReadings() {
-  //   const db = await this.dbObservable$;
-  //   return db.clear(ConstantsEnum.temperatureObjectStoreName);
-  // }
 
   clearTemperatureReadings() : Observable<boolean> {
 
@@ -394,18 +308,6 @@ export class IndexedDBService {
 
   // Get the last N-2 temperature readings from IndexedDB
   // Used for the chart / plot / graph
-  
-  // OLD VERSION - WORKS FINE
- 
-  // async getLastNTemperatureReadingsExcludingLast2(limit: number): Promise<any[]> {
-  //   const db = await this.dbObservable$;
-  //   const allReadings = await db.getAll(ConstantsEnum.temperatureObjectStoreName);
-  //   if (allReadings.length <= 2) {
-  //     return [];
-  //   }
-  //   return allReadings.slice(-limit - 2, -2);
-  // }
-
   getLastNTemperatureReadingsExcludingLast2(limit: number) : Observable< TemperatureInterface[] > {
     return this.dbObservable$
     .pipe(
@@ -431,12 +333,6 @@ export class IndexedDBService {
   }
 
   // Get all temperature readings from IndexedDB
- 
-  // old version, works fine!
-  // async getAllTemperatureReadings() {
-  //   const db = await this.dbObservable$;
-  //   return db.getAll(ConstantsEnum.temperatureObjectStoreName);
-  // }
 
   getAllTemperatureReadings() : Observable <TemperatureInterface[]> {
     return this.dbObservable$
