@@ -12,18 +12,8 @@ import {HomeComponent} from './components/home/home.component';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnDestroy   {
+export class AppComponent    {
   title = 'Mora Satellite';
-  private homeComponent: HomeComponent = inject(HomeComponent);
   
-  // Unsubscribe from global Observables
-  ngOnDestroy() {
-    if(this.homeComponent.intervalSubscription){
-      this.homeComponent.intervalSubscription.unsubscribe();
-    }
-    if(this.homeComponent.resetTimerSubscription) {
-      this.homeComponent.resetTimerSubscription.unsubscribe();
-    }
-
-  }
+ 
 }

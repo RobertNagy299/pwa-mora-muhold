@@ -1,9 +1,9 @@
 import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
-import {filter, Subscription, tap} from 'rxjs';
+import {debounceTime, filter, Subject, Subscription, switchMap, tap} from 'rxjs';
 import {AuthService} from '../../services/auth.service';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton} from '@angular/material/button';
-import {NgIf} from '@angular/common';
+import {AsyncPipe, NgIf} from '@angular/common';
 import {TemperatureFirebaseService} from '../../services/temperature-firebase.service';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {ConstantsEnum} from '../../utils/constants';
@@ -18,19 +18,22 @@ import { TemperatureInterface } from '../../interfaces/TemperatureInterface';
     MatIcon,
     MatButton,
     NgIf,
-    GradientTextDirective
+    GradientTextDirective,
+    AsyncPipe
   ],
   templateUrl: './temperature-chart.component.html',
   styleUrl: './temperature-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TemperatureChartComponent implements OnInit, OnDestroy {
+export class TemperatureChartComponent implements OnInit {
 
-  private temperatureSubscription: Subscription | null = null;
-  protected isLoggedIn = false;
+  
+  private clickSubject : Subject<void> = new Subject<void>()
 
-  constructor(private authService: AuthService ,private temperatureChartService: TemperatureFirebaseService,
-              private el: ElementRef) {}
+  constructor(
+    protected authService: AuthService,
+    private temperatureChartService: TemperatureFirebaseService,
+    private el: ElementRef) {}
 
 
   ngOnInit(): void {
@@ -41,54 +44,48 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
 
     // Fetch historical data and update the chart
     
-    // OLD BUT GOLD
+   
+    this.clickSubject.pipe(
+      debounceTime(1200),
 
-    // this.temperatureChartService.fetchHistoricalData(ConstantsEnum.dataLimit).then((historicalData) => {
-    //   this.temperatureChartService.updateChart(historicalData);
-    // });
+      switchMap(() => {
+        return this.temperatureChartService.downloadTemperatureData()
+      })
+    ).subscribe()
 
-    this.temperatureChartService.fetchHistoricalData(ConstantsEnum.dataLimit).pipe(
+    this.temperatureChartService.fetchHistoricalData(ConstantsEnum.dataLimit)
+    .pipe(
       tap((data: TemperatureInterface[]) => {
+        //console.log("data fetched historically =  " + data)
         this.temperatureChartService.updateChart(data);
       })
     ).subscribe()
 
     // Listen for voltage updates and update the chart
-    // OLD BUT GOLD??
-    // this.temperatureSubscription = this.temperatureChartService.listenForTemperatureUpdates().subscribe((data) => {
-    //   this.temperatureChartService.updateChart(data);
-    // });
 
-    this.temperatureSubscription = this.temperatureChartService.listenForTemperatureUpdates()
+    this.temperatureChartService.generateTemperatureData().pipe(untilDestroyed(this)).subscribe()
+
+    this.temperatureChartService.listenForTemperatureUpdates()
     .pipe(
-      
+      //tap((data) => console.log(`inside listenForTempUpdates in the component. Data = ${data} `)),
+
       filter((data) => data !== undefined),
 
       tap((data) => {
         this.temperatureChartService.updateChart(data);
-      })
+      }),
+
+      untilDestroyed(this),
     ).subscribe()
 
-    // Check authentication status
-    this.authService.authState$.pipe(untilDestroyed(this)).subscribe(isLoggedIn => {
-      this.isLoggedIn = isLoggedIn;
-    });
+    
   }
   // Method to trigger download for logged-in users
-  
-  // OLD BUT GOLD
-  // async downloadTemperatureData(): Promise<void> {
-  //   await this.temperatureChartService.downloadTemperatureData();
-  // }
+
 
   downloadTemperatureData() : void {
-    this.temperatureChartService.downloadTemperatureData().subscribe()
+    this.clickSubject.next();
   }
 
-  ngOnDestroy(): void {
-    // Unsubscribe from the voltage updates when the component is destroyed
-    if (this.temperatureSubscription) {
-      this.temperatureSubscription.unsubscribe();
-    }
-  }
+ 
 }

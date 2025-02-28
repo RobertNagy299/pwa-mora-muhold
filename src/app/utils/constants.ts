@@ -7,3 +7,21 @@ export enum ConstantsEnum {
   splashScreenDisplayTime = 2000, 
 
 }
+
+export const pagesThatALoggedInUserShouldNotAccess = new Set([
+  '/login',
+  '/registration',
+])
+
+export const pagesThatAGuestShouldNotAccess = new Set(
+  [
+    '/profile',
+  ]
+)
+
+export enum AuthStatesEnum {
+  unknown = 0,
+  authenticated = 1,
+  unauthenticated = 2,
+}
+

@@ -1,34 +1,41 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth-guard.service';
-import { AllowOnlyLoggedInGuard } from './guards/logged-in.service';
 
 export const routes: Routes = [
+  
   {
     path: "home",
-    loadComponent: () => import("./components/home/home.component").then(component => component.HomeComponent)
+    loadComponent: () => import("./components/home/home.component").then(component => component.HomeComponent),
+    // children: []
+    title: "Móra Satellite - Home",
   },
   {
     path: "voltage",
     loadComponent: () => import("./components/voltage-chart/voltage-chart.component").then(component => component.VoltageChartComponent),
+    title: "Voltage Chart",
   },
   {
     path: "temperature",
     loadComponent: () => import("./components/temperature-chart/temperature-chart.component").then(component => component.TemperatureChartComponent),
+    title: "Temperature Chart",
   },
   {
     path:"login",
     loadComponent: () => import("./components/login/login.component").then(component => component.LoginComponent),
-    canActivate: [AuthGuard] // Guard to prevent logged-in users from accessing login
+    canActivate: [AuthGuard], // Guard to prevent logged-in users from accessing login
+    title: "Log In",
   },
   {
     path:"registration",
     loadComponent: () => import("./components/registration/registration.component").then(component => component.RegistrationComponent),
-    canActivate: [AuthGuard] // Guard to prevent logged-in users from accessing registration
+    canActivate: [AuthGuard], // Guard to prevent logged-in users from accessing registration
+    title: "Register",
   },
   {
     path:"profile",
     loadComponent:() => import("./components/profile/profile.component").then(component => component.ProfileComponent),
-    canActivate: [AllowOnlyLoggedInGuard] // Guard to allow only logged-in users
+    canActivate: [AuthGuard], // Guard to allow only logged-in users
+    title: "Profile",
   },
   {
     path: "**",

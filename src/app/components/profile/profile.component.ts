@@ -13,11 +13,12 @@ import { VoltageFirebaseService } from '../../services/voltage-firebase.service'
 import { UptimeService } from '../../services/uptime.service';
 import { MatDivider } from '@angular/material/divider';
 import { HomeComponent } from '../home/home.component';
-import { catchError, from, map, merge, mergeAll, mergeMap, Observable, of, Subscription, switchMap, tap } from 'rxjs';
+import { catchError, debounceTime, EMPTY, map, merge, Observable, of, Subscription, tap, throttleTime } from 'rxjs';
 import { MatIcon } from '@angular/material/icon';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Router } from '@angular/router';
 import { ConnectivityService } from '../../services/connectivity.service';
+import { HomeService } from '../../services/home-service.service';
 
 @UntilDestroy()
 @Component({
@@ -42,13 +43,11 @@ import { ConnectivityService } from '../../services/connectivity.service';
   styleUrls: ['./profile.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProfileComponent implements OnInit, OnDestroy {
+export class ProfileComponent implements OnInit {
   userData: User | null = null;
   passwordForm!: FormGroup;
   deleteForm!: FormGroup;
-  private homeComponent = inject(HomeComponent);
-  private authSubscription: Subscription | null = null;
-
+  
   constructor(
     private authService: AuthService,
     private fb: FormBuilder,
@@ -57,7 +56,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private temperatureService: TemperatureFirebaseService,
     private uptimeService: UptimeService,
     private router: Router,
-    protected connectivityService: ConnectivityService
+    protected connectivityService: ConnectivityService,
+    private homeService: HomeService,
   ) {
     this.passwordForm = this.fb.group({
       currentPassword: ['', Validators.required],
@@ -71,9 +71,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.authSubscription = this.authService.getUserData().subscribe(user => {
-      this.userData = user;
-    });
+    this.authService.getUserData()
+    .pipe(
+      map(user => {
+        console.log(`User inside Profile page = ${user}`);
+        this.userData = user;
+      }),
+
+      untilDestroyed(this))
+    .subscribe();
   }
 
   private passwordsMatchValidator(group: FormGroup): { [key: string]: boolean } | null {
@@ -82,36 +88,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
-  
-  // OLD BUT GOLD
 
-  // async resetData(): Promise<void> {
-  //   if (confirm('Are you sure you want to reset the data?')) {
-  //     try {
-
-  //       await this.voltageService.deleteAllVoltageReadings();
-  //       await this.temperatureService.deleteAllTemperatureReadings();
-
-  //       await this.uptimeService.resetUptimeCounter();
-  //       this.homeComponent.count.set(0);
-
-  //       this.snackBar.open('Data reset successfully!', 'Close', {
-  //         duration: 3000,
-  //         panelClass: ['success-snackbar']
-  //       });
-  //       await this.router.navigate(['/home']);
-  //     } catch (error) {
-  //       console.error('Failed to reset data', error);
-  //       this.snackBar.open('Failed to reset data.', 'Close', {
-  //         duration: 3000,
-  //         panelClass: ['error-snackbar']
-  //       });
-  //     }
-  //   }
-  // }
 
 
   // NEW VERSION
+  // Confirmed to be acceptable
   resetData() : Observable<void> {
     if (confirm('Are you sure you want to reset the data?'))  {
       
@@ -120,7 +101,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           this.temperatureService.deleteAllTemperatureReadings(),
           this.uptimeService.resetUptimeCounter().pipe(
             tap(() => {
-              this.homeComponent.count.set(0)
+              this.homeService.setCounterValue(0);
             })
           ),
         ).pipe(
@@ -161,17 +142,28 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
 
+
+
   changePassword(): void {
-    if (this.passwordForm.valid) {
-      const currentPassword = this.passwordForm.get('currentPassword')?.value;
-      const newPassword = this.passwordForm.get('newPassword')?.value;
-      if (currentPassword && newPassword) {
-        this.authService.changePassword(currentPassword, newPassword).pipe(
-          catchError(error=>{
-          return  of(null);
-          }),
-          untilDestroyed(this)
-        ).subscribe(() => {
+    
+    if(!this.passwordForm.valid) {
+      return;
+    }
+
+    const currentPassword = this.passwordForm.get('currentPassword')?.value;
+    const newPassword = this.passwordForm.get('newPassword')?.value;
+
+    if (!currentPassword || !newPassword ) {
+      return ;
+    }
+
+    this.authService.changePassword(currentPassword, newPassword)
+    .pipe(
+
+      debounceTime(1200),
+     
+  
+      tap(() => {
           this.snackBar.open('Password changed successfully!', 'Close', {
             duration: 3000,
             panelClass: ['success-snackbar']
@@ -191,60 +183,87 @@ export class ProfileComponent implements OnInit, OnDestroy {
               control.markAsPristine();  // Mark as pristine
             }
           });
-        }, error => {
-          // console.log(error.toString());
-          if (error.toString().includes("weak-password")) {
-            // console.log("In weak password");
-            this.snackBar.open('Failed to change password. New Password must be at least 6 characters long', 'Close', {
-              duration: 3000,
-              panelClass: ['error-snackbar']
-            });
-          } else if (error.toString().includes("invalid-credential")) {
-            //  console.log("In invalid cred");
-            this.snackBar.open('Failed to change password. Current password does not match the one you entered', 'Close', {
-              duration: 3000,
-              panelClass: ['error-snackbar']
-            });
-          }
+        }
+      ),
 
-        });
-      }
-    }
+      catchError((error) => {
+        // console.log(error.toString());
+        if (error.toString().includes("weak-password")) {
+          // console.log("In weak password");
+          this.snackBar.open('Failed to change password. New Password must be at least 6 characters long', 'Close', {
+            duration: 3000,
+            panelClass: ['error-snackbar']
+          });
+        } else if (error.toString().includes("invalid-credential")) {
+          //  console.log("In invalid cred");
+          this.snackBar.open('Failed to change password. Current password does not match the one you entered', 'Close', {
+            duration: 3000,
+            panelClass: ['error-snackbar']
+          });
+        }
+        return EMPTY;
+      })
+
+
+    ).subscribe()
+    
+
+
   }
 
+
   deleteUser(): void {
-    if (this.deleteForm.valid) {
-      const email = this.deleteForm.get('email')?.value;
-      const password = this.deleteForm.get('password')?.value;
-      if (email && password) {
-        this.authService.deleteUser(email, password).pipe(untilDestroyed(this)).subscribe(() => {
+    if(!this.deleteForm.valid) {
+      return;
+    }
+
+    const email = this.deleteForm.get('email')?.value;
+    const password = this.deleteForm.get('password')?.value;
+
+
+    if (!(email && password)) {
+      return;
+    }
+
+    this.authService.deleteUser(email, password)
+    .pipe(
+     
+      debounceTime(1200),
+
+      tap(() => {
           this.snackBar.open('User deleted successfully!', 'Close', {
             duration: 3000,
             panelClass: ['success-snackbar']
           });
-          // Additional logic after successful deletion
-        }, error => {
-          //  effect(()=>console.log(error.toString()));
-          if (error.toString().includes("wrong-password")) {
-            // console.log("Wrong password");
-            this.snackBar.open('Failed to delete user. The password you entered is incorrect', 'Close', {
+        
+        }
+      ),
+
+      catchError(error => {
+
+        if (error.toString().includes("wrong-password")) {
+          // console.log("Wrong password");
+          this.snackBar.open('Failed to delete user. The password you entered is incorrect', 'Close', {
               duration: 3000,
               panelClass: ['error-snackbar']
-            });
-          } else {
-            this.snackBar.open('Failed to delete user.', 'Close', {
-              duration: 3000,
-              panelClass: ['error-snackbar']
-            });
-          }
-        });
-      }
-    }
+            }  
+          );   
+        } 
+          
+        else {
+          this.snackBar.open('Failed to delete user.', 'Close', {
+            duration: 3000,
+            panelClass: ['error-snackbar']
+          });
+        }
+
+        return EMPTY;
+      }),
+
+
+    ).subscribe()
+
   }
 
-  ngOnDestroy() {
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
-  }
+
 }

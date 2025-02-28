@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
 import {VoltageFirebaseService} from '../../services/voltage-firebase.service';
-import {map, Observable, of, Subscription, tap} from 'rxjs';
+import {debounceTime, filter, map, Observable, of, Subject, Subscription, switchMap, tap, throttleTime} from 'rxjs';
 import {AuthService} from '../../services/auth.service';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton} from '@angular/material/button';
@@ -26,9 +26,9 @@ import { AsyncPipe } from '@angular/common';
   styleUrl: './voltage-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class VoltageChartComponent implements OnInit, OnDestroy {
+export class VoltageChartComponent implements OnInit {
 
-  private voltageSubscription: Subscription | null = null;
+  private clickSubject = new Subject<void>()
   
   constructor(
     protected authService: AuthService,
@@ -43,18 +43,16 @@ export class VoltageChartComponent implements OnInit, OnDestroy {
     // Initialize the chart
     this.voltageFirebaseService.createChart(canvas);
 
-    this.voltageFirebaseService.generateVoltageData().pipe(untilDestroyed(this)).subscribe();
-
     
+    this.clickSubject.pipe(
+      
+      debounceTime(1200),
+      
+      switchMap(() => {
+        return this.voltageFirebaseService.downloadVoltageData()
+      })
+    ).subscribe()
     // Fetch historical data and update the chart
-    
-    /**
-     * OLD BUT GOLD
-     */
-
-    // this.voltageChartService.fetchHistoricalData(ConstantsEnum.dataLimit).then((historicalData) => {
-    //   this.voltageChartService.updateChart(historicalData);
-    // });
 
     // ok
     this.voltageFirebaseService.fetchHistoricalData(ConstantsEnum.dataLimit)
@@ -65,42 +63,33 @@ export class VoltageChartComponent implements OnInit, OnDestroy {
       })
     ).subscribe()
 
+    this.voltageFirebaseService.generateVoltageData().pipe(untilDestroyed(this)).subscribe();
 
     // Listen for voltage updates and update the chart
-    // old but gold
-    // this.voltageSubscription = this.voltageChartService.listenForVoltageUpdates().subscribe((data) => {
-    //   this.voltageChartService.updateChart(data);
-    // });
+  
 
-    this.voltageSubscription = this.voltageFirebaseService.listenForVoltageUpdates()
+     this.voltageFirebaseService.listenForVoltageUpdates()
     .pipe(
+      
+      filter((data) => data !== undefined),
+
       tap((data: VoltageInterface[]) => {
-        console.log(`Data inside voltageSubscription = ${JSON.stringify(data)}`); // ERROR, THIS SHOULD NOT BE UNDEFINED
+      //  console.log(`Data inside voltageSubscription = ${JSON.stringify(data)}`); // ERROR, THIS SHOULD NOT BE UNDEFINED
         this.voltageFirebaseService.updateChart(data);
-      })
+      }),
+
+      untilDestroyed(this),
     ).subscribe()
 
 
-    // Check authentication status
    
   }
   // Method to trigger download for logged-in users
   
-  /**OLD BUT GOLD */
-  
-  // async downloadVoltageData(): Promise<void> {
-  //   await this.voltageChartService.downloadVoltageData();
-  // }
-
   downloadVoltageData() : void {
-     this.voltageFirebaseService.downloadVoltageData().subscribe();
+    this.clickSubject.next();
   }
 
-   ngOnDestroy(): void {
-    // Unsubscribe from the voltage updates when the component is destroyed
-    if (this.voltageSubscription) {
-      this.voltageSubscription.unsubscribe();
-    }
-  }
+ 
 
 }

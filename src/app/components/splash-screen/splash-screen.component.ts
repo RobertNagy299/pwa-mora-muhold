@@ -1,6 +1,6 @@
 import {Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {NgIf, NgStyle} from "@angular/common";
-import {first, interval, takeUntil, timer} from 'rxjs'
+import {first, interval, takeUntil, tap, timer} from 'rxjs'
 import {ConstantsEnum } from '../../utils/constants';
 import { ThemeService } from '../../services/theme.service';
 @Component({
@@ -36,15 +36,17 @@ export class SplashScreenComponent implements OnInit {
     
     // True = dark mode 
     const theme : boolean = this.themeService.getStoredThemePreference();
-    this.themeService.updateTheme(theme)
+    this.themeService.toggleTheme(theme) //used to be updateTheme
     timer(ConstantsEnum.splashScreenDisplayTime - 400)
     .pipe(
-      first()
+      first(),
+
+      tap(() => {
+        this.scale = 3;
+        this.opacity = 0
+      })
     )
-    .subscribe(() => {
-      this.scale = 3;
-      this.opacity = 0
-    });
+    .subscribe();
 
   }
 }

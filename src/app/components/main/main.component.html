@@ -14,32 +14,32 @@
   <mat-drawer #drawer mode="over" opened="false" class="sidenav">
     <mat-nav-list class="sidenav-sticky">
       <mat-list-item>
-        <button class="button-in-sidenav" mat-button routerLink="/home" routerLinkActive="active-link">
+        <button class="button-in-sidenav" mat-button routerLink="/home" routerLinkActive="active-link" ariaCurrentWhenActive="page">
           <mat-icon>dashboard</mat-icon>
           Dashboard
         </button>
       </mat-list-item>
       <mat-list-item>
-        <button class="button-in-sidenav" mat-button routerLink="/voltage" routerLinkActive="active-link">
+        <button class="button-in-sidenav" mat-button routerLink="/voltage" routerLinkActive="active-link" ariaCurrentWhenActive="page">
           <mat-icon>bolt</mat-icon>
           Voltage
         </button>
       </mat-list-item>
       <mat-list-item>
-        <button class="button-in-sidenav" mat-button routerLink="/temperature" routerLinkActive="active-link">
+        <button class="button-in-sidenav" mat-button routerLink="/temperature" routerLinkActive="active-link" ariaCurrentWhenActive="page">
           <mat-icon>thermostat</mat-icon>
           Temperature
         </button>
       </mat-list-item>
       <mat-divider [vertical]="true" role="separator" style="height: calc(100vh - 304px); border-right-style: none;"></mat-divider>
       <mat-list-item *ngIf="!( this.authService.isLoggedIn$ | async)" class="bottom-nav-link" style="margin-top: auto;">
-        <button class="button-in-sidenav" mat-button routerLink="/login" routerLinkActive="active-link">
+        <button class="button-in-sidenav" mat-button [routerLink]="['/login', {redirect: this.routeToRedirectToAfterLogin() }]" routerLinkActive="active-link" ariaCurrentWhenActive="page">
           <mat-icon>login</mat-icon>
           Log in
         </button>
       </mat-list-item>
       <mat-list-item *ngIf="!(this.authService.isLoggedIn$ | async)" class="bottom-nav-link">
-        <button class="button-in-sidenav" mat-button routerLink="/registration" routerLinkActive="active-link">
+        <button class="button-in-sidenav" mat-button routerLink="/registration" routerLinkActive="active-link" ariaCurrentWhenActive="page">
           <mat-icon>app_registration</mat-icon>
           Register
         </button>

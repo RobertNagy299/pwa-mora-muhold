@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal, Signal} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { ReactiveFormsModule } from '@angular/forms';
 import {Router} from '@angular/router';
-import {shareReplay, Subscription} from 'rxjs';
+import {catchError, EMPTY, shareReplay, Subscription, tap} from 'rxjs';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import {MatSnackBar} from '@angular/material/snack-bar';
 
@@ -28,13 +28,14 @@ import {MatSnackBar} from '@angular/material/snack-bar';
   styleUrls: ['./registration.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RegistrationComponent implements OnInit, OnDestroy {
+export class RegistrationComponent {
   protected registerForm: FormGroup;
-  successMessage: string | null = null;
-  errorMessage: string | null = null;
-  submitted: boolean = false;
-  private authSubscription: Subscription | null = null;
+  
+  successMessage = signal("");
 
+  errorMessage = signal("");
+  submitted: boolean = false;
+ 
 
   constructor( private snackBar: MatSnackBar,
                private router: Router,
@@ -52,30 +53,26 @@ export class RegistrationComponent implements OnInit, OnDestroy {
     this.registerForm.markAsPristine();
 
   }
-  ngOnInit() {
-    this.authSubscription = this.authService.getUserData().subscribe(async user => {
-      if (user !== null && user !== undefined) {
-        await this.router.navigate(['/home']);
-      }
-    });
-  }
+ 
+
   onSubmit() {
-
-
     this.submitted = true; // Mark the form as submitted
-    if (this.registerForm.valid) {
-      const { username, email, password } = this.registerForm.value;
-      const registered$ = this.authService.register(username, email, password).pipe(
-        shareReplay(1)
-      );
-      
-      this.authService.register(username, email, password).pipe(untilDestroyed(this)).subscribe(
-        () => {
 
-          this.successMessage = 'User registered successfully';
-          this.errorMessage = null;
+    if (!this.registerForm.valid) {
+      return;
+    }
+
+    const { username, email, password } = this.registerForm.value;
+    
+    this.authService.register(username, email, password).
+    pipe(
+      tap(() => {
+          this.successMessage.set('User registered successfully');
+          this.errorMessage.set("")
           this.registerForm.reset();
-          this.snackBar.open(this.successMessage, 'Close', {
+
+          // SNACKBACK DOESN'T OPEN?? 
+          this.snackBar.open(this.successMessage(), 'Close', {
             duration: 3000,
             panelClass: ['success-snackbar']
           });
@@ -93,14 +90,18 @@ export class RegistrationComponent implements OnInit, OnDestroy {
           });
 
           this.submitted = true; // Reset the submitted flag after successful registration
+      }),
 
-        },
-        (error) => {
-          this.errorMessage = 'Error registering user: ' + error.message;
-          this.successMessage = null;
-        }
-      );
-    }
+      catchError((error) => {
+        this.errorMessage.set("Error registering user: " + error.message);
+        this.successMessage.set("");
+        return EMPTY;
+      }),
+
+      untilDestroyed(this)
+    
+    ).subscribe()
+
   }
 
   private mustMatch(password: string, confirmPassword: string) {
@@ -118,9 +119,5 @@ export class RegistrationComponent implements OnInit, OnDestroy {
     };
   }
 
-  ngOnDestroy() {
-    if(this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
-  }
+
 }
