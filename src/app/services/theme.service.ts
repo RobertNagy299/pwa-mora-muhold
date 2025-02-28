@@ -12,8 +12,13 @@ export class ThemeService {
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   toggleTheme(isDarkTheme: boolean) {
-    this.darkTheme.next(isDarkTheme);
+    
     this.storeThemePreference(isDarkTheme);
+    this.updateTheme(isDarkTheme)
+    //Always perform 'next'-ing at the end, after the required operations are done.
+    //Best practice
+    this.darkTheme.next(isDarkTheme);
+
   }
 
   public getStoredThemePreference(): boolean {
@@ -30,7 +35,7 @@ export class ThemeService {
     }
   }
 
-  public updateTheme(isDark: boolean) {
+  private updateTheme(isDark: boolean) {
       if (isPlatformBrowser(this.platformId) && document !== undefined && typeof document !== 'undefined') {
         const body = document.body;
         if (isDark) {

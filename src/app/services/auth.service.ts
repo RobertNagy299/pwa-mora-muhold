@@ -8,7 +8,7 @@ import {
   UserCredential, user, User as FirebaseUser,
   onAuthStateChanged
 } from '@angular/fire/auth';
-import { BehaviorSubject, catchError, concat, concatMap, EMPTY, filter, from, map, Observable, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, catchError, concat, concatMap, distinctUntilChanged, distinctUntilKeyChanged, EMPTY, filter, from, map, Observable, of, switchMap, tap } from 'rxjs';
 import { User } from '../interfaces/User';
 import { Router } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -27,18 +27,23 @@ export class AuthService {
   public authState$ = this.authStateSubject.asObservable();
 
   public isLoggedIn$ = this.currentUser$.pipe(
+    
+    
+
     switchMap((value: User | null) => {
       if(value !== null) {
         return of(true);
       }
       return of(false);
-    })
+    }),
+
+    distinctUntilChanged(),
   );
 
   constructor(private readonly firestore: Firestore, private readonly auth: Auth, private router: Router) {
     this.auth = getAuth();
     this.firestore = getFirestore();
-    this.initializeAuthStateListener();
+    this.initializeAuthStateListener().subscribe();
   }
 
   getUserData(): Observable<User | null> {
@@ -49,27 +54,20 @@ export class AuthService {
 
 
   //MOST RECENT VERSION - WORKS FINE
-  private initializeAuthStateListener(): void {
+  private initializeAuthStateListener(): Observable<void> {
     console.log("AuthService: Initializing auth state listener...");
 
-    user(this.auth) // Emits when auth state changes
+    return user(this.auth) //Working version used user(this.auth) // Emits when auth state changes
       .pipe(
         tap((firebaseUser) => 
           {
             console.log("AuthService: Firebase auth state changed:", firebaseUser);   
-            if (firebaseUser) {
-              this.authStateSubject.next(AuthStatesEnum.authenticated);
-            }
-            else {
-              this.authStateSubject.next(AuthStatesEnum.unauthenticated);
-            }
-
+      
           }), // Emit auth state
 
         switchMap((firebaseUser: FirebaseUser | null) => {
           if (!firebaseUser) {
             console.log("AuthService: No user, emitting null");
-            this.authStateSubject.next(AuthStatesEnum.unauthenticated);
             return of(null); // If no user, emit null immediately
           }
 
@@ -89,17 +87,20 @@ export class AuthService {
         switchMap((userData: User | null) => {
 
           console.log("AuthService: Final userData emission:", userData);
+          
+          this.currentUserSubject.next(userData);
+
           if(userData === null) {
             this.authStateSubject.next(AuthStatesEnum.unauthenticated);
           }
           else{
             this.authStateSubject.next(AuthStatesEnum.authenticated);
           }         
-          this.currentUserSubject.next(userData)
+          
 
           return EMPTY;
         })
-      ).subscribe()
+      )
     
   }
 
@@ -116,8 +117,28 @@ export class AuthService {
     }
   }
 
-  login(email: string, password: string): Observable<UserCredential> {
-    return from(signInWithEmailAndPassword(this.auth, email, password));
+  login(email: string, password: string): Observable<User> {
+    return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
+      switchMap((userCredentials) => {
+        const userDocRef = doc(this.firestore, 'users', userCredentials.user.uid);
+        return from(getDoc(userDocRef)).pipe(
+          tap((userDoc) => console.log("AuthService: User document fetched:", userDoc.exists() ? userDoc.data() : "not found")),
+          filter(userDoc => userDoc.exists()),
+          map((userDoc) => userDoc.data() as User),
+          catchError((err) => {
+            console.error("AuthService: Firestore error", err);
+            this.authStateSubject.next(AuthStatesEnum.unauthenticated);
+            return EMPTY;
+          }) 
+        );
+      }),
+
+      tap((userData:User) => {
+        this.currentUserSubject.next(userData);
+        this.authStateSubject.next(AuthStatesEnum.authenticated);
+
+      })
+    );
   }
 
   logout(): Observable<void> {
