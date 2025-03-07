@@ -10,6 +10,9 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { GradientTextDirective } from '../../directives/gradient-text.directive';
 import { fetchWithTimeout } from '../../utils/fetchWithTimeout';
 import { HomeService } from '../../services/home-service.service';
+import { MyStoreInterface } from '../../store/app.store';
+import { select, Store } from '@ngrx/store';
+import { selectUptime } from '../../store/uptimeCounterFeature/uptimeCounterFeature.selectors';
 
 @UntilDestroy()
 @Component({
@@ -22,7 +25,8 @@ import { HomeService } from '../../services/home-service.service';
 })
 export class HomeComponent {
  
-  
+  ;
+
   constructor(
     protected authService: AuthService,
     protected homeService: HomeService,

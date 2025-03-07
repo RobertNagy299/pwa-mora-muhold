@@ -32,6 +32,9 @@ import { filter, finalize, first, tap } from 'rxjs';
 import { HomeService } from '../../services/home-service.service';
 import { pagesThatALoggedInUserShouldNotAccess } from '../../utils/constants';
 import { RoutingRedirectService } from '../../services/routing-redirect.service';
+import { Store } from '@ngrx/store';
+import { MyStoreInterface } from '../../store/app.store';
+import { loadUptime, startIncrementing } from '../../store/uptimeCounterFeature/uptimeCounterFeature.actions';
 
 @UntilDestroy()
 @Component({
@@ -75,13 +78,17 @@ export class MainComponent implements OnInit, AfterViewInit{
     private themeService: ThemeService, 
     private homeService: HomeService, // needed to start the counter in the background
     private route: ActivatedRoute,
-    private routingRedirectService: RoutingRedirectService
-    
+    private routingRedirectService: RoutingRedirectService,
+    private store: Store<MyStoreInterface>
   ) {
      
   }
 
   ngOnInit() {
+
+   
+    this.homeService.init();
+
 
     this.routingRedirectService.redirectAfterLogin$
     .subscribe((e: RouterEvent) => {

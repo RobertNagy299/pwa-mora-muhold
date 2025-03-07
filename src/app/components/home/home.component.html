@@ -9,6 +9,6 @@
   </div>
   <div>
     <h2 >Uptime:</h2>
-    <p >{{this.homeService.getCounterValue()| uptimeTransform}}</p>
+    <p >{{this.homeService.uptimeValue$ | async | uptimeTransform}}</p>
   </div>
 </div>

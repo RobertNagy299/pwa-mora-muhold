@@ -6,7 +6,10 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class UptimeTransformPipe implements PipeTransform {
 
-  transform(value: number): string {
+  transform(value: number | null): string {
+    if(value === null) {
+      value = 0;
+    }
     const days = Math.floor(value / 86400);
     const remainingSecondsLessThanADay = value % 86400;
     const hours = Math.floor(remainingSecondsLessThanADay / 3600);

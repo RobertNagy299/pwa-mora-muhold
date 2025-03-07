@@ -19,6 +19,9 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Router } from '@angular/router';
 import { ConnectivityService } from '../../services/connectivity.service';
 import { HomeService } from '../../services/home-service.service';
+import { Store } from '@ngrx/store';
+import { MyStoreInterface } from '../../store/app.store';
+import { resetUptime, setUptime } from '../../store/uptimeCounterFeature/uptimeCounterFeature.actions';
 
 @UntilDestroy()
 @Component({
@@ -57,7 +60,8 @@ export class ProfileComponent implements OnInit {
     private uptimeService: UptimeService,
     private router: Router,
     protected connectivityService: ConnectivityService,
-    private homeService: HomeService,
+    
+    private store: Store<MyStoreInterface>,
   ) {
     this.passwordForm = this.fb.group({
       currentPassword: ['', Validators.required],
@@ -95,15 +99,21 @@ export class ProfileComponent implements OnInit {
   // Confirmed to be acceptable
   resetData() : Observable<void> {
     if (confirm('Are you sure you want to reset the data?'))  {
-      
+        
+       this.store.dispatch(resetUptime())
+        
+
         merge(
           this.voltageService.deleteAllVoltageReadings(),
           this.temperatureService.deleteAllTemperatureReadings(),
-          this.uptimeService.resetUptimeCounter().pipe(
-            tap(() => {
-              this.homeService.setCounterValue(0);
-            })
-          ),
+          
+          // old solution, works!
+
+          // this.uptimeService.resetUptimeCounter().pipe(
+          //   tap(() => {
+          //     this.homeService.setCounterValue(0);
+          //   })
+          // ),
         ).pipe(
           tap(() => {
              
