@@ -8,6 +8,12 @@ export enum ConstantsEnum {
 
 }
 
+
+export enum ChartTypeEnum {
+  VOLTAGE = 0,
+  TEMPERATURE = 1,
+}
+
 export const pagesThatALoggedInUserShouldNotAccess = new Set([
   '/login',
   '/registration',
@@ -20,8 +26,8 @@ export const pagesThatAGuestShouldNotAccess = new Set(
 )
 
 export enum AuthStatesEnum {
-  unknown = 0,
-  authenticated = 1,
-  unauthenticated = 2,
+  UNKNOWN = 0,
+  AUTHENTICATED = 1,
+  UNAUTHENTICATED = 2,
 }
 

@@ -23,7 +23,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  private authStateSubject = new BehaviorSubject<AuthStatesEnum>(AuthStatesEnum.unknown);
+  private authStateSubject = new BehaviorSubject<AuthStatesEnum>(AuthStatesEnum.UNKNOWN);
   public authState$ = this.authStateSubject.asObservable();
 
   public isLoggedIn$ = this.currentUser$.pipe(
@@ -78,7 +78,7 @@ export class AuthService {
             map((userDoc) => userDoc.data() as User),
             catchError((err) => {
               console.error("AuthService: Firestore error", err);
-              this.authStateSubject.next(AuthStatesEnum.unauthenticated);
+              this.authStateSubject.next(AuthStatesEnum.UNAUTHENTICATED);
               return EMPTY;
             }) 
           );
@@ -91,10 +91,10 @@ export class AuthService {
           this.currentUserSubject.next(userData);
 
           if(userData === null) {
-            this.authStateSubject.next(AuthStatesEnum.unauthenticated);
+            this.authStateSubject.next(AuthStatesEnum.UNAUTHENTICATED);
           }
           else{
-            this.authStateSubject.next(AuthStatesEnum.authenticated);
+            this.authStateSubject.next(AuthStatesEnum.AUTHENTICATED);
           }         
           
 
@@ -127,7 +127,7 @@ export class AuthService {
           map((userDoc) => userDoc.data() as User),
           catchError((err) => {
             console.error("AuthService: Firestore error", err);
-            this.authStateSubject.next(AuthStatesEnum.unauthenticated);
+            this.authStateSubject.next(AuthStatesEnum.UNAUTHENTICATED);
             return EMPTY;
           }) 
         );
@@ -135,7 +135,7 @@ export class AuthService {
 
       tap((userData:User) => {
         this.currentUserSubject.next(userData);
-        this.authStateSubject.next(AuthStatesEnum.authenticated);
+        this.authStateSubject.next(AuthStatesEnum.AUTHENTICATED);
 
       })
     );
@@ -144,7 +144,7 @@ export class AuthService {
   logout(): Observable<void> {
     return from(signOut(this.auth)).pipe(
       tap(() => {
-        this.authStateSubject.next(AuthStatesEnum.unauthenticated)
+        this.authStateSubject.next(AuthStatesEnum.UNAUTHENTICATED)
       })
     );
   }

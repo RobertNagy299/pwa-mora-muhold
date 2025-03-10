@@ -10,59 +10,62 @@ import {IndexedDBService} from './indexed-db.service'; // Import necessary Chart
 import {fetchWithTimeout} from '../utils/fetchWithTimeout';
 import {ConstantsEnum} from '../utils/constants';
 import { TemperatureInterface } from '../interfaces/TemperatureInterface';
+import { ChartService } from '../utils/updateChart';
 
 @Injectable({
   providedIn: 'root'
 })
-export class TemperatureFirebaseService{
+export class TemperatureFirebaseService extends ChartService{
 
-  private chart: Chart | null = null;
+ // private chart: Chart | null = null;
 
 
 
   constructor(private uptimeService: UptimeService,
               private db: Database,
-              private indexedDBService: IndexedDBService) {}
+              private indexedDBService: IndexedDBService) {
+    super();
+  }
 
   // Create the chart instance and set its initial configuration
-  createChart(chartElement: HTMLCanvasElement): void {
-    this.chart = new Chart(chartElement, {
-      type: 'line',
-      data: {
-        labels: [], // X axis: Uptime values (timestamp)
-        datasets: [
-          {
-            label: 'Temperature',
-            data: [], // Y axis: Temperature values
-            borderColor: 'rgb(255,110,17)',
-            fill: false,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        animation: {
-          duration: 0,
-        },
-        scales: {
-          x: {
-            type: 'linear',
-            position: 'bottom',
-            title: {
-              display: true,
-              text: 'Uptime (s)',
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Temperature (°C)',
-            },
-          },
-        },
-      },
-    });
-  }
+  // createChart(chartElement: HTMLCanvasElement): void {
+  //   this.chart = new Chart(chartElement, {
+  //     type: 'line',
+  //     data: {
+  //       labels: [], // X axis: Uptime values (timestamp)
+  //       datasets: [
+  //         {
+  //           label: 'Temperature',
+  //           data: [], // Y axis: Temperature values
+  //           borderColor: 'rgb(255,110,17)',
+  //           fill: false,
+  //         },
+  //       ],
+  //     },
+  //     options: {
+  //       responsive: true,
+  //       animation: {
+  //         duration: 0,
+  //       },
+  //       scales: {
+  //         x: {
+  //           type: 'linear',
+  //           position: 'bottom',
+  //           title: {
+  //             display: true,
+  //             text: 'Uptime (s)',
+  //           },
+  //         },
+  //         y: {
+  //           title: {
+  //             display: true,
+  //             text: 'Temperature (°C)',
+  //           },
+  //         },
+  //       },
+  //     },
+  //   });
+  // }
 
 
 
@@ -150,22 +153,22 @@ export class TemperatureFirebaseService{
   
   }
   // Update the chart with new temperature readings from Firebase
-  updateChart(data: TemperatureInterface[]): void { // used to be any[]
-    if (this.chart && data.length > 0) {
-      data.forEach((reading: TemperatureInterface) => {
-        const uptime = reading.uptime;
-        const temperature = reading.temperature;
+  // updateChart(data: TemperatureInterface[]): void { // used to be any[]
+  //   if (this.chart && data.length > 0) {
+  //     data.forEach((reading: TemperatureInterface) => {
+  //       const uptime = reading.uptime;
+  //       const temperature = reading.temperature;
 
-        // Update chart with new data
-        if(this.chart !== null && this.chart.data.labels !== undefined) {
-          this.chart.data.labels.push(uptime);
-          this.chart.data.datasets[0].data.push(temperature);
-          this.chart.update();
-        }
+  //       // Update chart with new data
+  //       if(this.chart !== null && this.chart.data.labels !== undefined) {
+  //         this.chart.data.labels.push(uptime);
+  //         this.chart.data.datasets[0].data.push(temperature);
+  //         this.chart.update();
+  //       }
 
-      });
-    }
-  }
+  //     });
+  //   }
+  // }
 
 
   // Download temperature readings as JSON for logged-in users

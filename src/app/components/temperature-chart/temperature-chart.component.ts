@@ -1,14 +1,18 @@
-import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
-import {debounceTime, filter, Subject, Subscription, switchMap, tap} from 'rxjs';
-import {AuthService} from '../../services/auth.service';
-import {MatIcon} from '@angular/material/icon';
-import {MatButton} from '@angular/material/button';
-import {AsyncPipe, NgIf} from '@angular/common';
-import {TemperatureFirebaseService} from '../../services/temperature-firebase.service';
-import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
-import {ConstantsEnum} from '../../utils/constants';
-import {GradientTextDirective} from '../../directives/gradient-text.directive';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
+import { debounceTime, filter, Subject, Subscription, switchMap, tap } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { MatIcon } from '@angular/material/icon';
+import { MatButton } from '@angular/material/button';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { TemperatureFirebaseService } from '../../services/temperature-firebase.service';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { ChartTypeEnum, ConstantsEnum } from '../../utils/constants';
+import { GradientTextDirective } from '../../directives/gradient-text.directive';
 import { TemperatureInterface } from '../../interfaces/TemperatureInterface';
+import {Chart} from 'chart.js/auto';
+import { LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement,LineController, PointElement, ArcElement } from 'chart.js';
+import { ChartFactory } from '../../utils/ChartFactory/CustomChartFactory';
+
 
 @UntilDestroy()
 @Component({
@@ -25,26 +29,29 @@ import { TemperatureInterface } from '../../interfaces/TemperatureInterface';
   styleUrl: './temperature-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TemperatureChartComponent implements OnInit {
+export class TemperatureChartComponent implements OnInit, OnDestroy {
 
-  
-  private clickSubject : Subject<void> = new Subject<void>()
+  private chart!: Chart;
+  private clickSubject: Subject<void> = new Subject<void>()
 
   constructor(
     protected authService: AuthService,
     private temperatureChartService: TemperatureFirebaseService,
-    private el: ElementRef) {}
+    private el: ElementRef,
+    private chartFactory: ChartFactory,
+  ) {
+    Chart.register(LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement, LineController)
+  }
 
 
   ngOnInit(): void {
     const canvas = this.el.nativeElement.querySelector('#realtimeTemperatureChart');
+    this.chart = this.chartFactory.createChart(canvas, ChartTypeEnum.TEMPERATURE);
 
-    // Initialize the chart
-    this.temperatureChartService.createChart(canvas);
-
+ 
     // Fetch historical data and update the chart
-    
-   
+
+
     this.clickSubject.pipe(
       debounceTime(1200),
 
@@ -54,38 +61,46 @@ export class TemperatureChartComponent implements OnInit {
     ).subscribe()
 
     this.temperatureChartService.fetchHistoricalData(ConstantsEnum.dataLimit)
-    .pipe(
-      tap((data: TemperatureInterface[]) => {
-        //console.log("data fetched historically =  " + data)
-        this.temperatureChartService.updateChart(data);
-      })
-    ).subscribe()
+      .pipe(
+
+        filter((data) => data !== undefined),
+
+        tap((data: TemperatureInterface[]) => {
+          //console.log("data fetched historically =  " + data)
+          this.temperatureChartService.updateChart(this.chart, data);
+        })
+      ).subscribe()
 
     // Listen for voltage updates and update the chart
 
     this.temperatureChartService.generateTemperatureData().pipe(untilDestroyed(this)).subscribe()
 
     this.temperatureChartService.listenForTemperatureUpdates()
-    .pipe(
-      //tap((data) => console.log(`inside listenForTempUpdates in the component. Data = ${data} `)),
+      .pipe(
+        //tap((data) => console.log(`inside listenForTempUpdates in the component. Data = ${data} `)),
 
-      filter((data) => data !== undefined),
+        filter((data) => data !== undefined),
 
-      tap((data) => {
-        this.temperatureChartService.updateChart(data);
-      }),
+        tap((data) => {
+          this.temperatureChartService.updateChart(this.chart, data);
+        }),
 
-      untilDestroyed(this),
-    ).subscribe()
+        untilDestroyed(this),
+      ).subscribe()
 
-    
+
   }
   // Method to trigger download for logged-in users
 
 
-  downloadTemperatureData() : void {
+  downloadTemperatureData(): void {
     this.clickSubject.next();
   }
 
- 
+  ngOnDestroy(): void {
+    Chart.unregister(LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement, LineController);
+    this.chart.clear();
+    this.chart.destroy();
+  }
+
 }

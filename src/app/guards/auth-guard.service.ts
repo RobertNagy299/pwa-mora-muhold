@@ -19,14 +19,14 @@ export class AuthGuard implements CanActivate {
     return this.authService.authState$.pipe(
       tap(userAuthState => console.log("AuthGuard: Received user state:", userAuthState)),
 
-      filter((userAuthState) => userAuthState !== AuthStatesEnum.unknown),
+      filter((userAuthState) => userAuthState !== AuthStatesEnum.UNKNOWN),
       take(1), // Take the first value
       switchMap(userAuthState => {
 
         console.log(`in AuthGuard, route.url[0].path = ${route.url[0].path}`);
 
         switch (userAuthState) {
-          case AuthStatesEnum.authenticated: {
+          case AuthStatesEnum.AUTHENTICATED: {
 
             if (pagesThatALoggedInUserShouldNotAccess.has(`/${route.url[0].path}`)) {
               this.router.navigate(['/home']);
@@ -37,7 +37,7 @@ export class AuthGuard implements CanActivate {
             return of(true);
             
           } 
-          case AuthStatesEnum.unauthenticated: {
+          case AuthStatesEnum.UNAUTHENTICATED: {
             if (pagesThatAGuestShouldNotAccess.has(`/${route.url[0].path}`)) {
               
               this.router.navigate(['/login', {redirect: '/profile'}]);
