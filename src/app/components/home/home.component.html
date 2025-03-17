@@ -1,7 +1,7 @@
 <div class="home-container">
 
   <h1 appGradientText [color1]="'cyan'" [color2]="'orange'" [duration]="'3s'">
-    Welcome<ng-container *ngIf="authService.currentUser$ | async as user; else guest">, {{ user?.username }}!
+    Welcome<ng-container *ngIf="this.authService.currentUserFromStore$ | async as user; else guest">, {{ user?.username }}!
     </ng-container>
     <ng-template #guest>!</ng-template>
   </h1>

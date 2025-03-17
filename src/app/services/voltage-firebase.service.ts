@@ -2,8 +2,6 @@ import {Injectable} from '@angular/core';
 import {Database, ref, set, get, query, orderByKey, limitToLast, remove} from '@angular/fire/database';
 import { catchError,  concatMap, debounceTime, from, interval, map, merge, Observable } from 'rxjs';
 
-import Chart from 'chart.js/auto';
-import {LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement } from 'chart.js';
 import {UptimeService} from './uptime.service';
 import {IndexedDBService} from './indexed-db.service';
 import {ConstantsEnum} from '../utils/constants';
@@ -27,47 +25,6 @@ export class VoltageFirebaseService extends ChartService {
   ) {
     super();
   }
- 
-  // Create the chart instance and set its initial configuration
-  // createChart(chartElement: HTMLCanvasElement): void {
-  //   this.chart = new Chart(chartElement, {
-  //     type: 'line',
-  //     data: {
-  //       labels: [], // X axis: Uptime values (timestamp)
-  //       datasets: [
-  //         {
-  //           label: 'Voltage',
-  //           data: [], // Y axis: Voltage values
-  //           borderColor: 'rgb(75, 192, 192)',
-  //           fill: false,
-  //         },
-  //       ],
-  //     },
-  //     options: {
-  //       responsive: true,
-  //       animation: {
-  //         duration: 0,
-  //       },
-  //       scales: {
-  //         x: {
-  //           type: 'linear',
-  //           position: 'bottom',
-  //           title: {
-  //             display: true,
-  //             text: 'Uptime (s)',
-  //           },
-  //         },
-  //         y: {
-  //           title: {
-  //             display: true,
-  //             text: 'Voltage (V)',
-  //           },
-  //         },
-  //       },
-  //     },
-  //   });
-  // }
-
 
  
 
@@ -148,35 +105,6 @@ export class VoltageFirebaseService extends ChartService {
 
 
   
-
-  // Update the chart with new voltage readings from Firebase
-  // OLD BUT GOLD
-  // updateChart(data: VoltageInterface[]): void { // used to be any[]
-  //   // console.log(`Data inside updateChart: ${JSON.stringify(data)}`)
-  //   if (this.chart && data.length > 0) {
-  //     data.forEach((reading: VoltageInterface) => { // used to be any
-  //       const uptime = reading.uptime;
-  //       const voltage = reading.voltage;
-
-  //       // Update chart with new data
-  //       if(this.chart !== null && this.chart.data.labels !== undefined) {
-  //         this.chart.data.labels.push(uptime);
-  //         this.chart.data.datasets[0].data.push(voltage);
-  //         this.chart.update();
-  //       }
-
-  //     });
-  //   }
-  // }
-  
-  // NEW BUT ???
-  
-  
-
-
-
-
-
 
   downloadVoltageData() : Observable<void> {
     

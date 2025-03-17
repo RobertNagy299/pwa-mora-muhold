@@ -1,6 +1,6 @@
 import {createReducer, on} from "@ngrx/store";
 import { incrementUptime, resetUptime, setUptime } from "./uptimeCounterFeature.actions";
-import {UptimeState, initialUptimeState} from './uptimeCounterFeature.state';
+import {initialUptimeState} from './uptimeCounterFeature.state';
 
 export const uptimeReducer = createReducer(
     initialUptimeState,

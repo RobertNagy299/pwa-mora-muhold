@@ -1,18 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, inject, Injectable, OnInit, Signal, signal } from '@angular/core';
-import { UptimeService } from '../../services/uptime.service';
-import { catchError, combineLatest, concatMap, filter, interval, map, Observable, of, race, Subscription, switchMap, tap } from 'rxjs';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UptimeTransformPipe } from '../../pipes/uptime-transform.pipe';
 import { UntilDestroy } from '@ngneat/until-destroy';
-import { IndexedDBService } from '../../services/indexed-db.service';
-import { ConstantsEnum } from '../../utils/constants';
 import { AuthService } from '../../services/auth.service';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { GradientTextDirective } from '../../directives/gradient-text.directive';
-import { fetchWithTimeout } from '../../utils/fetchWithTimeout';
 import { HomeService } from '../../services/home-service.service';
-import { MyStoreInterface } from '../../store/app.store';
-import { select, Store } from '@ngrx/store';
-import { selectUptime } from '../../store/uptimeCounterFeature/uptimeCounterFeature.selectors';
 
 @UntilDestroy()
 @Component({
@@ -25,13 +17,13 @@ import { selectUptime } from '../../store/uptimeCounterFeature/uptimeCounterFeat
 })
 export class HomeComponent {
  
-  ;
+ // protected currentUserFromStore$ : Observable<User | null>;
 
   constructor(
     protected authService: AuthService,
     protected homeService: HomeService,
   ) {
-   
+  // this.currentUserFromStore$ = this.store.pipe(select(selectCurrentUser))
   }
 
 

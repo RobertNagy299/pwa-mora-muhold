@@ -1,8 +1,7 @@
-import { Injectable, OnInit} from '@angular/core';
+import { Injectable} from '@angular/core';
 import {Database, ref, set, get, query, orderByKey, limitToLast, remove} from '@angular/fire/database';
-import { catchError, concatMap, debounceTime, filter, from, interval, map, merge, Observable, throttleTime } from 'rxjs';
+import { catchError, concatMap, debounceTime, filter, from, interval, map, merge, Observable } from 'rxjs';
 
-import Chart from 'chart.js/auto';
 //import { Chart, LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement } from 'chart.js';
 import {UptimeService} from './uptime.service';
 
@@ -27,45 +26,7 @@ export class TemperatureFirebaseService extends ChartService{
     super();
   }
 
-  // Create the chart instance and set its initial configuration
-  // createChart(chartElement: HTMLCanvasElement): void {
-  //   this.chart = new Chart(chartElement, {
-  //     type: 'line',
-  //     data: {
-  //       labels: [], // X axis: Uptime values (timestamp)
-  //       datasets: [
-  //         {
-  //           label: 'Temperature',
-  //           data: [], // Y axis: Temperature values
-  //           borderColor: 'rgb(255,110,17)',
-  //           fill: false,
-  //         },
-  //       ],
-  //     },
-  //     options: {
-  //       responsive: true,
-  //       animation: {
-  //         duration: 0,
-  //       },
-  //       scales: {
-  //         x: {
-  //           type: 'linear',
-  //           position: 'bottom',
-  //           title: {
-  //             display: true,
-  //             text: 'Uptime (s)',
-  //           },
-  //         },
-  //         y: {
-  //           title: {
-  //             display: true,
-  //             text: 'Temperature (°C)',
-  //           },
-  //         },
-  //       },
-  //     },
-  //   });
-  // }
+
 
 
 
@@ -152,24 +113,7 @@ export class TemperatureFirebaseService extends ChartService{
     ) 
   
   }
-  // Update the chart with new temperature readings from Firebase
-  // updateChart(data: TemperatureInterface[]): void { // used to be any[]
-  //   if (this.chart && data.length > 0) {
-  //     data.forEach((reading: TemperatureInterface) => {
-  //       const uptime = reading.uptime;
-  //       const temperature = reading.temperature;
-
-  //       // Update chart with new data
-  //       if(this.chart !== null && this.chart.data.labels !== undefined) {
-  //         this.chart.data.labels.push(uptime);
-  //         this.chart.data.datasets[0].data.push(temperature);
-  //         this.chart.update();
-  //       }
-
-  //     });
-  //   }
-  // }
-
+ 
 
   // Download temperature readings as JSON for logged-in users
 

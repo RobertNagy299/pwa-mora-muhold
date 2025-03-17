@@ -4,7 +4,7 @@
   </button>
   <span class="main-brand-title">Móra Satellite</span>
   <span class="spacer"></span>
-  <button class="profile-button" *ngIf="this.authService.isLoggedIn$ | async" routerLink="/profile" mat-icon-button>
+  <button class="profile-button" *ngIf="this.authService.isLoggedInFromStore$ | async" routerLink="/profile" mat-icon-button>
     <mat-icon class="navbar-icon">account_circle</mat-icon>
   </button>
   <mat-slide-toggle [formControl]="switchTheme" #darkModeSwitch></mat-slide-toggle>
@@ -32,19 +32,19 @@
         </button>
       </mat-list-item>
       <mat-divider [vertical]="true" role="separator" style="height: calc(100vh - 304px); border-right-style: none;"></mat-divider>
-      <mat-list-item *ngIf="!( this.authService.isLoggedIn$ | async)" class="bottom-nav-link" style="margin-top: auto;">
-        <button class="button-in-sidenav" mat-button [routerLink]="['/login', {redirect: this.routeToRedirectToAfterLogin() }]" routerLinkActive="active-link" ariaCurrentWhenActive="page">
+      <mat-list-item *ngIf="!( this.authService.isLoggedInFromStore$ | async)" class="bottom-nav-link" style="margin-top: auto;">
+        <button class="button-in-sidenav" mat-button [routerLink]="['/login', {redirect: this.routingRedirectService.routeToRedirectToAfterLogin() }]" routerLinkActive="active-link" ariaCurrentWhenActive="page">
           <mat-icon>login</mat-icon>
           Log in
         </button>
       </mat-list-item>
-      <mat-list-item *ngIf="!(this.authService.isLoggedIn$ | async)" class="bottom-nav-link">
+      <mat-list-item *ngIf="!(this.authService.isLoggedInFromStore$ | async)" class="bottom-nav-link">
         <button class="button-in-sidenav" mat-button routerLink="/registration" routerLinkActive="active-link" ariaCurrentWhenActive="page">
           <mat-icon>app_registration</mat-icon>
           Register
         </button>
       </mat-list-item>
-      <mat-list-item *ngIf="this.authService.isLoggedIn$ | async" class="bottom-nav-link" style="margin-top: 50px;">
+      <mat-list-item *ngIf="this.authService.isLoggedInFromStore$ | async" class="bottom-nav-link" style="margin-top: 50px;">
         <button class="button-in-sidenav" mat-button (click)="logout()">
           <mat-icon>logout</mat-icon>
           Log out
@@ -58,72 +58,3 @@
     </div>
   </mat-drawer-content>
 </mat-drawer-container>
-
-
-
-<!-- my version, functional -->
-<!--<mat-toolbar class="navbar" color="primary">-->
-<!--  <button (click)="drawer.toggle()" mat-icon-button>-->
-<!--    <mat-icon>menu</mat-icon>-->
-<!--  </button>-->
-<!--  <span>Móra Satellite</span>-->
-<!--  <span class="spacer"></span>-->
-<!--  <button *ngIf="isLoggedIn" routerLink="/profile" mat-icon-button>-->
-<!--    <mat-icon class="navbar-icon">account_circle</mat-icon>-->
-<!--  </button>-->
-<!--  <mat-slide-toggle [formControl]="switchTheme" #darkModeSwitch></mat-slide-toggle>-->
-<!--</mat-toolbar>-->
-
-<!--<mat-drawer-container >-->
-
-<!--  <mat-drawer   #drawer mode="over" opened="false" >-->
-<!--    <mat-nav-list class="sidenav-sticky">-->
-
-<!--      <mat-list-item>-->
-<!--        <button class="button-in-sidenav" mat-button routerLink="/home" routerLinkActive="active-link">-->
-<!--          <mat-icon>dashboard</mat-icon>-->
-<!--          Dashboard-->
-<!--        </button>-->
-<!--      </mat-list-item>-->
-<!--      <mat-list-item>-->
-<!--        <button class="button-in-sidenav" mat-button routerLink="/voltage" routerLinkActive="active-link">-->
-<!--          <mat-icon>bolt</mat-icon>-->
-<!--          Voltage-->
-<!--        </button>-->
-<!--      </mat-list-item>-->
-<!--      <mat-list-item>-->
-<!--        <button class="button-in-sidenav" mat-button routerLink="/temperature" routerLinkActive="active-link">-->
-<!--          <mat-icon>thermostat</mat-icon>-->
-<!--          Temperature-->
-<!--        </button>-->
-<!--      </mat-list-item>-->
-<!--      <mat-divider [vertical]="true" role="separator" style="height: calc(100vh - 324px); border-right-style: none;"></mat-divider>-->
-<!--      <mat-list-item *ngIf="!isLoggedIn"  class="bottom-nav-link" style="margin-top: auto;">-->
-<!--        <button class="button-in-sidenav" mat-button routerLink="/login" routerLinkActive="active-link">-->
-<!--          <mat-icon>login</mat-icon>-->
-<!--          Log in-->
-<!--        </button>-->
-<!--      </mat-list-item>-->
-<!--      <mat-list-item *ngIf="!isLoggedIn"  class="bottom-nav-link">-->
-<!--        <button class="button-in-sidenav" mat-button routerLink="/registration" routerLinkActive="active-link">-->
-<!--          <mat-icon>-->
-<!--            app_registration-->
-<!--          </mat-icon>-->
-<!--          Register-->
-<!--        </button>-->
-<!--      </mat-list-item>-->
-
-<!--      <mat-list-item *ngIf="isLoggedIn"  class="bottom-nav-link" style="margin-top: 50px;">-->
-<!--        <button class="button-in-sidenav" mat-button (click)="logout()">-->
-<!--          <mat-icon>logout</mat-icon>-->
-<!--          Log out-->
-<!--        </button>-->
-<!--      </mat-list-item>-->
-<!--    </mat-nav-list>-->
-<!--  </mat-drawer>-->
-<!--  <mat-drawer-content>-->
-<!--    <div style="text-align: center; min-height: calc(100vh - 64px);">-->
-<!--      <router-outlet></router-outlet>-->
-<!--    </div>-->
-<!--  </mat-drawer-content>-->
-<!--</mat-drawer-container>-->

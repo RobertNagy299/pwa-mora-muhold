@@ -1,6 +1,6 @@
 <div class="chart-container">
   <h1 appGradientText [color1]="'cyan'" [color2]="'darkblue'" [duration]="'15s'">Voltage readings</h1>
-  <button mat-button mat-flat-button  *ngIf="this.authService.isLoggedIn$ | async" (click)="downloadVoltageData()">
+  <button mat-button mat-flat-button  *ngIf="this.authService.isLoggedInFromStore$ | async" (click)="downloadVoltageData()">
     JSON <mat-icon>download</mat-icon>
   </button>
   <canvas class="chart"  id="realtimeChart"></canvas>

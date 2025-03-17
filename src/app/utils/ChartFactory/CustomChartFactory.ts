@@ -100,6 +100,7 @@ export class ChartFactory {
   }
   //#endregion
 
+
   //#region temperature config
   private readonly temperatureData = {
     ...this.DefaultDataConfig,
@@ -130,7 +131,8 @@ export class ChartFactory {
     options: {...this.temperatureOptions},
 
   }
-
+  //#endregion
+  
   //#region public factory method
   public createChart(chartElement: HTMLCanvasElement, chartType: ChartTypeEnum) : Chart {
 

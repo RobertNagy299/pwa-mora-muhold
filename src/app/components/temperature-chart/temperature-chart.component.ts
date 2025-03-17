@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
-import { debounceTime, filter, Subject, Subscription, switchMap, tap } from 'rxjs';
+import { debounceTime, filter, Subject, switchMap, tap } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
@@ -33,7 +33,7 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
 
   private chart!: Chart;
   private clickSubject: Subject<void> = new Subject<void>()
-
+  
   constructor(
     protected authService: AuthService,
     private temperatureChartService: TemperatureFirebaseService,

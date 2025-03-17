@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
 import {VoltageFirebaseService} from '../../services/voltage-firebase.service';
-import {debounceTime, filter, map, Observable, of, Subject, Subscription, switchMap, tap, throttleTime} from 'rxjs';
+import {debounceTime, filter, Subject, switchMap, tap} from 'rxjs';
 import {AuthService} from '../../services/auth.service';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton} from '@angular/material/button';
@@ -42,7 +42,7 @@ export class VoltageChartComponent implements OnInit, OnDestroy {
     private el: ElementRef,
     private chartFactory: ChartFactory
   ) {
-    Chart.register(LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement, LineController, LineController)
+    Chart.register(LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement, LineController)
   }
 
 
@@ -104,7 +104,7 @@ export class VoltageChartComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    Chart.unregister(LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement);
+    Chart.unregister(LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement, LineController);
     this.chart.clear();
     this.chart.destroy();
   }

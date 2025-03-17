@@ -1,9 +1,5 @@
-import { Injectable, signal } from '@angular/core';
-import { concatMap, filter, interval, Observable, of, startWith, switchMap, tap } from 'rxjs';
-import { fetchWithTimeout } from '../utils/fetchWithTimeout';
-import { ConstantsEnum } from '../utils/constants';
-import { IndexedDBService } from './indexed-db.service';
-import { UptimeService } from './uptime.service';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 import { MyStoreInterface } from '../store/app.store';
 import { loadUptime, startIncrementing } from '../store/uptimeCounterFeature/uptimeCounterFeature.actions';

@@ -1,14 +1,4 @@
-import {from, map, Observable, race, throwError, timer } from "rxjs";
-
-// OLD, WORKS FINE
-// export function fetchWithTimeout(promise: Promise<any>, timeout: number): Promise<any> {
-//   const timeoutPromise = new Promise((_, reject) =>
-
-//     setTimeout(() => reject(new Error('Request timed out')), timeout)
-  
-//   );
-//   return Promise.race([promise, timeoutPromise]);
-// }
+import {map, Observable, race, throwError, timer } from "rxjs";
 
 export function fetchWithTimeout(observable: Observable<any>, timeout: number) : Observable<any> {
   

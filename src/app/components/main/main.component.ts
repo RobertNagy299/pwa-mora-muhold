@@ -3,10 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component, ElementRef,
   OnInit,
-  signal,
-  ViewChild,
-  WritableSignal
-} from '@angular/core';
+  ViewChild} from '@angular/core';
 import {
   MatDrawer,
   MatDrawerContainer,
@@ -19,22 +16,20 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
 
 import { MatListItem, MatNavList} from '@angular/material/list';
 import {MatDivider} from '@angular/material/divider';
-import {ActivatedRoute, EventType, Router, RouterEvent, RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
+import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {ThemeService} from '../../services/theme.service';
 import {NgIf} from '@angular/common';
 import {AuthService} from '../../services/auth.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
-import { filter, finalize, first, tap } from 'rxjs';
+import { filter, first } from 'rxjs';
 import { HomeService } from '../../services/home-service.service';
-import { pagesThatALoggedInUserShouldNotAccess } from '../../utils/constants';
 import { RoutingRedirectService } from '../../services/routing-redirect.service';
 import { Store } from '@ngrx/store';
 import { MyStoreInterface } from '../../store/app.store';
-import { loadUptime, startIncrementing } from '../../store/uptimeCounterFeature/uptimeCounterFeature.actions';
+import { logout } from '../../store/userAuthFeatures/userAuthFeature.actions';
 
 @UntilDestroy()
 @Component({
@@ -66,41 +61,42 @@ import { loadUptime, startIncrementing } from '../../store/uptimeCounterFeature/
 export class MainComponent implements OnInit, AfterViewInit{
 
   switchTheme = new FormControl(false);
- 
-  protected routeToRedirectToAfterLogin: WritableSignal<string> = signal('/home');
+
+  // MOVED TO routingRedirectService
+
+  // protected routeToRedirectToAfterLogin: WritableSignal<string> = signal('/home');
   
-  private routeToRedirectToAfterLogOut: WritableSignal<string> = signal('/home');
+  // private routeToRedirectToAfterLogOut: WritableSignal<string> = signal('/home');
 
   constructor(
-    private router: Router,
-    private snackBar: MatSnackBar,
-    protected authService: AuthService,
-    private themeService: ThemeService, 
-    private homeService: HomeService, // needed to start the counter in the background
-    private route: ActivatedRoute,
-    private routingRedirectService: RoutingRedirectService,
-    private store: Store<MyStoreInterface>
+    
+    protected readonly authService: AuthService,
+    private readonly themeService: ThemeService, 
+    private readonly homeService: HomeService, // needed to start the counter in the background
+    protected readonly routingRedirectService: RoutingRedirectService,
+    private readonly store: Store<MyStoreInterface>
   ) {
-     
   }
 
   ngOnInit() {
 
    
     this.homeService.init();
+    this.authService.init();
+
+    // MOVED TO routerRedirectService
+
+    // this.routingRedirectService.redirectAfterLogin$
+    // .subscribe((e: RouterEvent) => {
+    //   console.log(`navigated in main: RouterEvent.url = ${e.url}`);
+    //   this.routeToRedirectToAfterLogin.set(e.url);
+    // })
 
 
-    this.routingRedirectService.redirectAfterLogin$
-    .subscribe((e: RouterEvent) => {
-      console.log(`navigated in main: RouterEvent.url = ${e.url}`);
-      this.routeToRedirectToAfterLogin.set(e.url);
-    })
-
-
-    this.routingRedirectService.redirectAfterLogout$
-    .subscribe((e: RouterEvent) => {
-      this.routeToRedirectToAfterLogOut.set(e.url)
-    })
+    // this.routingRedirectService.redirectAfterLogout$
+    // .subscribe((e: RouterEvent) => {
+    //   this.routeToRedirectToAfterLogOut.set(e.url)
+    // })
     
 
 
@@ -126,21 +122,23 @@ export class MainComponent implements OnInit, AfterViewInit{
 
   }
   logout(): void {
-    this.authService.logout()
-    .pipe(
+    // TODO
+    this.store.dispatch(logout())
+
+    // .pipe(
     
-      tap(() => {
-        this.snackBar.open('Logged out successfully!', 'Close', {
-          duration: 3000,
-          panelClass: ['success-snackbar']
-        });
-      }),
+    //   tap(() => {
+    //     this.snackBar.open('Logged out successfully!', 'Close', {
+    //       duration: 3000,
+    //       panelClass: ['success-snackbar']
+    //     });
+    //   }),
     
-      finalize(() =>  this.router.navigate([this.routeToRedirectToAfterLogOut()])),
+    //   finalize(() =>  this.router.navigate([this.routeToRedirectToAfterLogOut()])),
      
       
-    )
-    .subscribe();
+    // )
+    
   }
 
 

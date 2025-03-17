@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IDBPDatabase, openDB } from 'idb';
 import { ConstantsEnum } from '../utils/constants';
-import { BehaviorSubject, catchError, concat, filter, first, from, last, map, Observable, of, retry, shareReplay, switchMap, take, tap, throwError } from 'rxjs';
-import { User } from '@angular/fire/auth';
+import { catchError, concat, filter, from, map, Observable, of, shareReplay, switchMap, throwError } from 'rxjs';
 import { VoltageInterface } from '../interfaces/VoltageInterface';
 import { TemperatureInterface } from '../interfaces/TemperatureInterface';
 

@@ -1,16 +1,15 @@
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal, Signal} from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { ReactiveFormsModule } from '@angular/forms';
-import {Router} from '@angular/router';
-import {catchError, EMPTY, shareReplay, Subscription, tap} from 'rxjs';
-import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import { UntilDestroy } from '@ngneat/until-destroy';
+import { Store } from '@ngrx/store';
+import { MyStoreInterface } from '../../store/app.store';
+import { register } from '../../store/userAuthFeatures/userAuthFeature.actions';
 
 @UntilDestroy()
 @Component({
@@ -30,17 +29,17 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 })
 export class RegistrationComponent {
   protected registerForm: FormGroup;
-  
-  successMessage = signal("");
 
-  errorMessage = signal("");
-  submitted: boolean = false;
- 
+  // successMessage = signal("");
 
-  constructor( private snackBar: MatSnackBar,
-               private router: Router,
-               private fb: FormBuilder,
-               private authService: AuthService) {
+  // errorMessage = signal("");
+  // submitted: boolean = false;
+
+
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly store: Store<MyStoreInterface>,
+  ) {
 
     this.registerForm = this.fb.group({
       username: ['', Validators.required],
@@ -53,54 +52,57 @@ export class RegistrationComponent {
     this.registerForm.markAsPristine();
 
   }
- 
+
 
   onSubmit() {
-    this.submitted = true; // Mark the form as submitted
+    //this.submitted = true; // Mark the form as submitted
 
-    if (!this.registerForm.valid) {
-      return;
-    }
+    // if (!this.registerForm.valid) {
+    //   return;
+    // }
 
-    const { username, email, password } = this.registerForm.value;
-    
-    this.authService.register(username, email, password).
-    pipe(
-      tap(() => {
-          this.successMessage.set('User registered successfully');
-          this.errorMessage.set("")
-          this.registerForm.reset();
+    // const { username, email, password } = this.registerForm.value;
+
+
+    this.store.dispatch(register({registerForm: this.registerForm}))
+
+ //   this.authService.register(username, email, password).
+   //   pipe(
+      // tap(() => {
+         // this.successMessage.set('User registered successfully');
+         // this.errorMessage.set("")
+         
 
           // SNACKBACK DOESN'T OPEN?? 
-          this.snackBar.open(this.successMessage(), 'Close', {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          });
+          // this.snackBar.open(this.successMessage(), 'Close', {
+          //   duration: 3000,
+          //   panelClass: ['success-snackbar']
+          // });
+          // this.registerForm.reset();
+          // this.registerForm.markAsUntouched();
+          // this.registerForm.markAsPristine();
+          // // Reset form control state manually (this will fix the red error borders)
+          // Object.keys(this.registerForm.controls).forEach(field => {
+          //   const control = this.registerForm.get(field);
+          //   if (control) {
+          //     control.setErrors(null); // Remove any errors
+          //     control.markAsUntouched(); // Mark as untouched
+          //     control.markAsPristine();  // Mark as pristine
+          //   }
+          // });
 
-          this.registerForm.markAsUntouched();
-          this.registerForm.markAsPristine();
-          // Reset form control state manually (this will fix the red error borders)
-          Object.keys(this.registerForm.controls).forEach(field => {
-            const control = this.registerForm.get(field);
-            if (control) {
-              control.setErrors(null); // Remove any errors
-              control.markAsUntouched(); // Mark as untouched
-              control.markAsPristine();  // Mark as pristine
-            }
-          });
+        //  this.submitted = true; // Reset the submitted flag after successful registration
+     //   }),
 
-          this.submitted = true; // Reset the submitted flag after successful registration
-      }),
+        // catchError((error) => {
+        //   this.errorMessage.set("Error registering user: " + error.message);
+        //   this.successMessage.set("");
+        //   return EMPTY;
+        // }),
 
-      catchError((error) => {
-        this.errorMessage.set("Error registering user: " + error.message);
-        this.successMessage.set("");
-        return EMPTY;
-      }),
+      
 
-      untilDestroyed(this)
-    
-    ).subscribe()
+     // ).subscribe()
 
   }
 

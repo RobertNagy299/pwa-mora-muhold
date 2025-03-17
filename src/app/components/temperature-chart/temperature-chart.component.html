@@ -1,6 +1,6 @@
 <div class="chart-container">
   <h1 appGradientText [color1]="'orange'" [color2]="'brown'" [duration]="'15s'">Temperature readings</h1>
-  <button class="orange" mat-button mat-flat-button  *ngIf="this.authService.isLoggedIn$ | async" (click)="downloadTemperatureData()">
+  <button class="orange" mat-button mat-flat-button  *ngIf="this.authService.isLoggedInFromStore$ | async" (click)="downloadTemperatureData()">
     JSON <mat-icon>download</mat-icon>
   </button>
   <canvas class="chart" id="realtimeTemperatureChart"></canvas>
