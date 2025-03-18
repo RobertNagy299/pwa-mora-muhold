@@ -10,16 +10,16 @@ import { User } from '../../interfaces/User';
 import { TemperatureFirebaseService } from '../../services/temperature-firebase.service';
 import { VoltageFirebaseService } from '../../services/voltage-firebase.service';
 import { MatDivider } from '@angular/material/divider';
-import { catchError, map, merge, Observable, of, tap } from 'rxjs';
+import { catchError, combineLatest, debounceTime, EMPTY, map, merge, Observable, of, startWith, tap } from 'rxjs';
 import { MatIcon } from '@angular/material/icon';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { Router } from '@angular/router';
 import { ConnectivityService } from '../../services/connectivity.service';
 import { Store } from '@ngrx/store';
 import { MyStoreInterface } from '../../store/app.store';
-import { resetUptime } from '../../store/uptimeCounterFeature/uptimeCounterFeature.actions';
-import { changePassword, deleteAccount } from '../../store/userAuthFeatures/userAuthFeature.actions';
+import { resetUptime } from '../../store/uptime-counter-features/uptimeCounterFeature.actions';
 import { AuthService } from '../../services/auth.service';
+import { ProfilePageData } from '../../interfaces/profile-page-data';
 
 @UntilDestroy()
 @Component({
@@ -44,11 +44,13 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./profile.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProfileComponent  {
+export class ProfileComponent {
   //userData: User | null = null;
   passwordForm!: FormGroup;
   deleteForm!: FormGroup;
-  
+
+  protected data$: Observable<ProfilePageData>;
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly snackBar: MatSnackBar,
@@ -68,6 +70,23 @@ export class ProfileComponent  {
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
+
+    this.data$ = combineLatest([this.authService.currentUserFromStore$, this.connectivityService.isOnline$]).pipe(
+      map(([user, hasInternetAccess]) => {
+        return {
+          hasInternetAccess,
+          user,
+        }
+      }),
+
+      startWith({user: null, hasInternetAccess: false}),
+
+      catchError(() => {
+        return of({user: null, hasInternetAccess: false});
+      })
+
+    )
+
   }
 
   // ngOnInit(): void {
@@ -93,56 +112,51 @@ export class ProfileComponent  {
 
   // NEW VERSION
   // Confirmed to be acceptable
-  resetData() : Observable<void> {
-    if (confirm('Are you sure you want to reset the data?'))  {
-        
-       this.store.dispatch(resetUptime())
-        
+  resetData(): Observable<void> {
+    if (confirm('Are you sure you want to reset the data?')) {
 
-        merge(
-          this.voltageService.deleteAllVoltageReadings(),
-          this.temperatureService.deleteAllTemperatureReadings(),
-          
-          // old solution, works!
+      this.store.dispatch(resetUptime())
 
-          // this.uptimeService.resetUptimeCounter().pipe(
-          //   tap(() => {
-          //     this.homeService.setCounterValue(0);
-          //   })
-          // ),
-        ).pipe(
-          tap(() => {
-             
-            this.snackBar.open('Data reset successfully!', 'Close', {
-              duration: 3000,
-              panelClass: ['success-snackbar']
-            });
 
-          }),
+      merge(
+        this.voltageService.deleteAllVoltageReadings(),
+        this.temperatureService.deleteAllTemperatureReadings(),
 
-          map((/*success*/) => {
-            return this.router.navigate(['/home']);
-          }),
+        // old solution, works!
 
-          catchError((error) => {
-            console.error('Failed to reset data', error.message);
-            this.snackBar.open('Failed to reset data.', 'Close', {
-              duration: 3000,
-              panelClass: ['error-snackbar']
-            });
+        // this.uptimeService.resetUptimeCounter().pipe(
+        //   tap(() => {
+        //     this.homeService.setCounterValue(0);
+        //   })
+        // ),
+      ).pipe(
+        tap(() => {
 
-            return of(null)
-          }),
+          this.snackBar.open('Data reset successfully!', 'Close', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
 
-         
+        }),
 
-        ).subscribe()
+        map((/*success*/) => {
+          return this.router.navigate(['/home']);
+        }),
 
-       
+        catchError((error) => {
+          console.error('Failed to reset data', error.message);
+          this.snackBar.open('Failed to reset data.', 'Close', {
+            duration: 3000,
+            panelClass: ['error-snackbar']
+          });
+
+          return of(null)
+        }),
 
 
 
-      
+      ).subscribe()
+
     }
     return of();
   }
@@ -151,119 +165,132 @@ export class ProfileComponent  {
 
 
   changePassword(): void {
-    
+
+
+    //  this.store.dispatch(changePassword({passwordForm: this.passwordForm}));
+
+
+    if (!this.passwordForm.valid) {
+      return;
+    }
+
+    const currentPassword = this.passwordForm.get('currentPassword')?.value;
+    const newPassword = this.passwordForm.get('newPassword')?.value;
+
+    // if (!currentPassword || !newPassword) {
+    //   return ;
+    // }
   
-    this.store.dispatch(changePassword({passwordForm: this.passwordForm}));
-    
+    this.authService.changePassword(currentPassword, newPassword)
+      .pipe(
 
-    // this.authService.changePassword(currentPassword, newPassword)
-    // .pipe(
+        // MIGRATED TO NGRX
+        debounceTime(1200),
 
-      // MIGRATED TO NGRX
-      // debounceTime(1200),
-     
-  
-      // tap(() => {
-      //     this.snackBar.open('Password changed successfully!', 'Close', {
-      //       duration: 3000,
-      //       panelClass: ['success-snackbar']
-      //     });
-      //     this.passwordForm.reset();
+
+        tap(() => {
+          this.snackBar.open('Password changed successfully!', 'Close', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+          this.passwordForm.reset();
 
 
 
-      //     this.passwordForm.markAsUntouched();
-      //     this.passwordForm.markAsPristine();
-      //     // Reset form control state manually (this will fix the red error borders)
-      //     Object.keys(this.passwordForm.controls).forEach(field => {
-      //       const control = this.passwordForm.get(field);
-      //       if (control) {
-      //         control.setErrors(null); // Remove any errors
-      //         control.markAsUntouched(); // Mark as untouched
-      //         control.markAsPristine();  // Mark as pristine
-      //       }
-      //     });
-      //   }
-      // ),
+          this.passwordForm.markAsUntouched();
+          this.passwordForm.markAsPristine();
+          // Reset form control state manually (this will fix the red error borders)
+          Object.keys(this.passwordForm.controls).forEach(field => {
+            const control = this.passwordForm.get(field);
+            if (control) {
+              control.setErrors(null); // Remove any errors
+              control.markAsUntouched(); // Mark as untouched
+              control.markAsPristine();  // Mark as pristine
+            }
+          });
+        }
+        ),
 
-      //moved to ngrx
-      // catchError((error) => {
-      //   // console.log(error.toString());
-      //   if (error.toString().includes("weak-password")) {
-      //     // console.log("In weak password");
-      //     this.snackBar.open('Failed to change password. New Password must be at least 6 characters long', 'Close', {
-      //       duration: 3000,
-      //       panelClass: ['error-snackbar']
-      //     });
-      //   } else if (error.toString().includes("invalid-credential")) {
-      //     //  console.log("In invalid cred");
-      //     this.snackBar.open('Failed to change password. Current password does not match the one you entered', 'Close', {
-      //       duration: 3000,
-      //       panelClass: ['error-snackbar']
-      //     });
-      //   }
-      //   return EMPTY;
-      // })
+        //moved to ngrx
+        catchError((error) => {
+          // console.log(error.toString());
+          if (error.toString().includes("weak-password")) {
+            // console.log("In weak password");
+            this.snackBar.open('Failed to change password. New Password must be at least 6 characters long', 'Close', {
+              duration: 3000,
+              panelClass: ['error-snackbar']
+            });
+          } else if (error.toString().includes("invalid-credential")) {
+            //  console.log("In invalid cred");
+            this.snackBar.open('Failed to change password. Current password does not match the one you entered', 'Close', {
+              duration: 3000,
+              panelClass: ['error-snackbar']
+            });
+          }
+          return EMPTY;
+        })
 
 
-    //).subscribe()
-    
+      ).subscribe()
+
 
 
   }
 
 
   deleteUser(): void {
-    // if(!this.deleteForm.valid) {
-    //   return;
-    // }
+   
+    if(!this.deleteForm.valid) {
+      return;
+    }
 
-    // const email = this.deleteForm.get('email')?.value;
-    // const password = this.deleteForm.get('password')?.value;
+    const email = this.deleteForm.get('email')?.value;
+    const password = this.deleteForm.get('password')?.value;
 
 
     // if (!(email && password)) {
     //   return;
     // }
-    this.store.dispatch(deleteAccount({deleteForm: this.deleteForm}));
 
-  //   this.authService.deleteUser(email, password)
-  //   .pipe(
-     
-  //  //   debounceTime(1200),
+    // this.store.dispatch(deleteAccount({ deleteForm: this.deleteForm }));
 
-  //     // tap(() => {
-  //     //     this.snackBar.open('User deleted successfully!', 'Close', {
-  //     //       duration: 3000,
-  //     //       panelClass: ['success-snackbar']
-  //     //     });
-        
-  //     //   }
-  //     // ),
+      this.authService.deleteUser(email, password)
+      .pipe(
 
-  //     // catchError(error => {
+       debounceTime(1200),
 
-  //     //   if (error.toString().includes("wrong-password")) {
-  //     //     // console.log("Wrong password");
-  //     //     this.snackBar.open('Failed to delete user. The password you entered is incorrect', 'Close', {
-  //     //         duration: 3000,
-  //     //         panelClass: ['error-snackbar']
-  //     //       }  
-  //     //     );   
-  //     //   } 
-          
-  //     //   else {
-  //     //     this.snackBar.open('Failed to delete user.', 'Close', {
-  //     //       duration: 3000,
-  //     //       panelClass: ['error-snackbar']
-  //     //     });
-  //     //   }
+        tap(() => {
+            this.snackBar.open('User deleted successfully!', 'Close', {
+              duration: 3000,
+              panelClass: ['success-snackbar']
+            });
 
-  //     //   return EMPTY;
-  //     // }),
+          }
+        ),
+
+        catchError(error => {
+
+          if (error.toString().includes("wrong-password")) {
+            // console.log("Wrong password");
+            this.snackBar.open('Failed to delete user. The password you entered is incorrect', 'Close', {
+                duration: 3000,
+                panelClass: ['error-snackbar']
+              }  
+            );   
+          } 
+
+          else {
+            this.snackBar.open('Failed to delete user.', 'Close', {
+              duration: 3000,
+              panelClass: ['error-snackbar']
+            });
+          }
+
+          return EMPTY;
+        }),
 
 
-  //   ).subscribe()
+      ).subscribe()
 
   }
 

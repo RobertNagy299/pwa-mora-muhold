@@ -4,6 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { Observable, of } from 'rxjs';
 import { filter, switchMap, take, tap } from 'rxjs/operators';
 import { AuthStatesEnum, pagesThatAGuestShouldNotAccess, pagesThatALoggedInUserShouldNotAccess } from '../utils/constants';
+import { RoutingRedirectService } from '../services/routing-redirect.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +12,9 @@ import { AuthStatesEnum, pagesThatAGuestShouldNotAccess, pagesThatALoggedInUserS
 export class AuthGuard implements CanActivate {
 
   constructor(
-    private authService: AuthService,
-    private router: Router
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly routingRedirectService: RoutingRedirectService
   ) { }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
@@ -41,6 +43,7 @@ export class AuthGuard implements CanActivate {
             if (pagesThatAGuestShouldNotAccess.has(`/${route.url[0].path}`)) {
               
               this.router.navigate(['/login', {redirect: '/profile'}]);
+              this.routingRedirectService.routeToRedirectToAfterLogin.set('/profile')
               return of(false);
               
             }

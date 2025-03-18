@@ -33,7 +33,7 @@
       </mat-list-item>
       <mat-divider [vertical]="true" role="separator" style="height: calc(100vh - 304px); border-right-style: none;"></mat-divider>
       <mat-list-item *ngIf="!( this.authService.isLoggedInFromStore$ | async)" class="bottom-nav-link" style="margin-top: auto;">
-        <button class="button-in-sidenav" mat-button [routerLink]="['/login', {redirect: this.routingRedirectService.routeToRedirectToAfterLogin() }]" routerLinkActive="active-link" ariaCurrentWhenActive="page">
+        <button class="button-in-sidenav" mat-button [routerLink]="['/login']" routerLinkActive="active-link" ariaCurrentWhenActive="page">
           <mat-icon>login</mat-icon>
           Log in
         </button>

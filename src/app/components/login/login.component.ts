@@ -9,7 +9,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { Store } from '@ngrx/store';
 import { MyStoreInterface } from '../../store/app.store';
-import { login } from '../../store/userAuthFeatures/userAuthFeature.actions';
+import { login } from '../../store/user-auth-features/userAuthFeature.actions';
 
 @UntilDestroy()
 @Component({
@@ -61,7 +61,7 @@ export class LoginComponent  {
     
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-
+      console.log("VALID LOGIN FORM");
       this.store.dispatch(login({email, password}));
       
     //  this.authService.login(email, password)

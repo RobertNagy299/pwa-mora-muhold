@@ -105,7 +105,8 @@ export class TemperatureFirebaseService extends ChartService{
               return [];
             }
             return Object.values(data.val()) as TemperatureInterface[];
-          })
+          }),
+          
           
         )
       })

@@ -1,5 +1,5 @@
 import { Injectable, signal, WritableSignal } from '@angular/core';
-import { EventType, Router, RouterEvent } from '@angular/router';
+import { ActivatedRouteSnapshot, EventType, Router, RouterEvent } from '@angular/router';
 import { filter, Observable, shareReplay } from 'rxjs';
 import { pagesThatAGuestShouldNotAccess, pagesThatALoggedInUserShouldNotAccess } from '../utils/constants';
 
@@ -43,7 +43,8 @@ export class RoutingRedirectService {
 
     this.redirectAfterLogin$
       .subscribe((e: RouterEvent) => {
-       // console.log(`navigated in main: RouterEvent.url = ${e.url}`);
+      //  console.log(`navigated in main: RouterEvent.url = ${e.url.split('redirect')}`);
+
         this.routeToRedirectToAfterLogin.set(e.url);
       })
 

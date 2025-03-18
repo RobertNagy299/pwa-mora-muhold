@@ -9,7 +9,11 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { Store } from '@ngrx/store';
 import { MyStoreInterface } from '../../store/app.store';
-import { register } from '../../store/userAuthFeatures/userAuthFeature.actions';
+import { catchError, EMPTY, tap } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
+import { RoutingRedirectService } from '../../services/routing-redirect.service';
 
 @UntilDestroy()
 @Component({
@@ -30,6 +34,7 @@ import { register } from '../../store/userAuthFeatures/userAuthFeature.actions';
 export class RegistrationComponent {
   protected registerForm: FormGroup;
 
+
   // successMessage = signal("");
 
   // errorMessage = signal("");
@@ -39,6 +44,11 @@ export class RegistrationComponent {
   constructor(
     private readonly fb: FormBuilder,
     private readonly store: Store<MyStoreInterface>,
+    private readonly snackBar: MatSnackBar,
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly routingRedirectService: RoutingRedirectService,
+
   ) {
 
     this.registerForm = this.fb.group({
@@ -57,52 +67,57 @@ export class RegistrationComponent {
   onSubmit() {
     //this.submitted = true; // Mark the form as submitted
 
-    // if (!this.registerForm.valid) {
-    //   return;
-    // }
+    if (!this.registerForm.valid) {
+      return;
+    }
 
-    // const { username, email, password } = this.registerForm.value;
+    const { username, email, password } = this.registerForm.value;
 
 
-    this.store.dispatch(register({registerForm: this.registerForm}))
+    // this.store.dispatch(register({registerForm: this.registerForm}))
 
- //   this.authService.register(username, email, password).
-   //   pipe(
-      // tap(() => {
-         // this.successMessage.set('User registered successfully');
-         // this.errorMessage.set("")
-         
+    this.authService.register(username, email, password).
+      pipe(
+        tap(() => {
+          // this.successMessage.set('User registered successfully');
+          //  this.errorMessage.set("")
+
 
           // SNACKBACK DOESN'T OPEN?? 
-          // this.snackBar.open(this.successMessage(), 'Close', {
-          //   duration: 3000,
-          //   panelClass: ['success-snackbar']
-          // });
-          // this.registerForm.reset();
-          // this.registerForm.markAsUntouched();
-          // this.registerForm.markAsPristine();
-          // // Reset form control state manually (this will fix the red error borders)
-          // Object.keys(this.registerForm.controls).forEach(field => {
-          //   const control = this.registerForm.get(field);
-          //   if (control) {
-          //     control.setErrors(null); // Remove any errors
-          //     control.markAsUntouched(); // Mark as untouched
-          //     control.markAsPristine();  // Mark as pristine
-          //   }
-          // });
+          this.snackBar.open('User registered successfully', 'Close', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+          this.registerForm.reset();
+          this.registerForm.markAsUntouched();
+          this.registerForm.markAsPristine();
+          // Reset form control state manually (this will fix the red error borders)
+          Object.keys(this.registerForm.controls).forEach(field => {
+            const control = this.registerForm.get(field);
+            if (control) {
+              control.setErrors(null); // Remove any errors
+              control.markAsUntouched(); // Mark as untouched
+              control.markAsPristine();  // Mark as pristine
+            }
+          });
+          this.router.navigate([this.routingRedirectService.routeToRedirectToAfterLogin()])
+          // this.submitted = true; // Reset the submitted flag after successful registration
+        }),
 
-        //  this.submitted = true; // Reset the submitted flag after successful registration
-     //   }),
+        catchError((error) => {
+          //this.errorMessage.set("Error registering user: " + error.message);
+          // this.successMessage.set("");
+          console.error("Error registering user: ", error);
+          this.snackBar.open('Registration failed!', 'Close', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+          return EMPTY;
+        }),
 
-        // catchError((error) => {
-        //   this.errorMessage.set("Error registering user: " + error.message);
-        //   this.successMessage.set("");
-        //   return EMPTY;
-        // }),
 
-      
 
-     // ).subscribe()
+      ).subscribe()
 
   }
 

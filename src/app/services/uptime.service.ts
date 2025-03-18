@@ -7,7 +7,7 @@ import { fetchWithTimeout } from '../utils/fetchWithTimeout';
 import { ConstantsEnum } from '../utils/constants';
 import { MyStoreInterface } from '../store/app.store';
 import { select, Store } from '@ngrx/store';
-import { selectUptime } from '../store/uptimeCounterFeature/uptimeCounterFeature.selectors';
+import { selectUptime } from '../store/uptime-counter-features/uptimeCounterFeature.selectors';
 
 @Injectable({
   providedIn: 'root'

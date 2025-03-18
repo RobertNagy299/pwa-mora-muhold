@@ -29,7 +29,7 @@ import { HomeService } from '../../services/home-service.service';
 import { RoutingRedirectService } from '../../services/routing-redirect.service';
 import { Store } from '@ngrx/store';
 import { MyStoreInterface } from '../../store/app.store';
-import { logout } from '../../store/userAuthFeatures/userAuthFeature.actions';
+import { logout } from '../../store/user-auth-features/userAuthFeature.actions';
 
 @UntilDestroy()
 @Component({
@@ -62,11 +62,6 @@ export class MainComponent implements OnInit, AfterViewInit{
 
   switchTheme = new FormControl(false);
 
-  // MOVED TO routingRedirectService
-
-  // protected routeToRedirectToAfterLogin: WritableSignal<string> = signal('/home');
-  
-  // private routeToRedirectToAfterLogOut: WritableSignal<string> = signal('/home');
 
   constructor(
     
@@ -83,21 +78,6 @@ export class MainComponent implements OnInit, AfterViewInit{
    
     this.homeService.init();
     this.authService.init();
-
-    // MOVED TO routerRedirectService
-
-    // this.routingRedirectService.redirectAfterLogin$
-    // .subscribe((e: RouterEvent) => {
-    //   console.log(`navigated in main: RouterEvent.url = ${e.url}`);
-    //   this.routeToRedirectToAfterLogin.set(e.url);
-    // })
-
-
-    // this.routingRedirectService.redirectAfterLogout$
-    // .subscribe((e: RouterEvent) => {
-    //   this.routeToRedirectToAfterLogOut.set(e.url)
-    // })
-    
 
 
     this.themeService.isDarkTheme
@@ -122,23 +102,9 @@ export class MainComponent implements OnInit, AfterViewInit{
 
   }
   logout(): void {
-    // TODO
+   
     this.store.dispatch(logout())
 
-    // .pipe(
-    
-    //   tap(() => {
-    //     this.snackBar.open('Logged out successfully!', 'Close', {
-    //       duration: 3000,
-    //       panelClass: ['success-snackbar']
-    //     });
-    //   }),
-    
-    //   finalize(() =>  this.router.navigate([this.routeToRedirectToAfterLogOut()])),
-     
-      
-    // )
-    
   }
 
 

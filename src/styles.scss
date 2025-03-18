@@ -69,6 +69,17 @@ body {
   margin-top: 10px;
 }
 
+.error-snackbar {
+  --mdc-snackbar-container-color: #ffbc58;  
+  --mat-snack-bar-button-color: #2e2e2eda;
+  --mdc-snackbar-supporting-text-color: #2e2e2eda;
+  // --mat-snack-bar-button-color: var(--secondary-color);
+}
+
+// .success-snackbar {
+//   --mdc-snackbar-container-color: var(var(--success-color))
+// }
+
 .chart-container {
   display: flex;
   flex-direction: column;

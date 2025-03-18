@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 import { MyStoreInterface } from '../store/app.store';
-import { loadUptime, startIncrementing } from '../store/uptimeCounterFeature/uptimeCounterFeature.actions';
-import { selectUptime } from '../store/uptimeCounterFeature/uptimeCounterFeature.selectors';
+import { loadUptime, startIncrementing } from '../store/uptime-counter-features/uptimeCounterFeature.actions';
+import { selectUptime } from '../store/uptime-counter-features/uptimeCounterFeature.selectors';
 
 @Injectable({
   providedIn: 'root'
