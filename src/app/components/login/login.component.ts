@@ -30,13 +30,6 @@ import { login } from '../../store/user-auth-features/userAuthFeature.actions';
 export class LoginComponent  {
   
   protected loginForm: FormGroup;
-  ////successMessage : WritableSignal<string> = signal("");
- // errorMessageExists$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
- // errorMessage: WritableSignal<string> = signal("");
- // submitted: boolean = false;
- // nextPageToRedirecTo: WritableSignal<string> = signal('');
-  
-
 
   constructor(
     private readonly fb: FormBuilder,
@@ -49,57 +42,16 @@ export class LoginComponent  {
     });
   }
 
-  // ngOnInit(): void {
-  //   console.log(`In login, this.route.snapshot.paramMap.get('redirect') = ${this.route.snapshot.paramMap.get('redirect')}`);
-  //   this.nextPageToRedirecTo.set(this.route.snapshot.paramMap.get('redirect') ?? '/home');
-  // }
- 
+
 
   onSubmit() {
-    //this.submitted = true;
 
     
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
       console.log("VALID LOGIN FORM");
       this.store.dispatch(login({email, password}));
-      
-    //  this.authService.login(email, password)
-     //   .pipe(
-
-          // MOVED TO EFFECT
-          // tap(() => {
-          //   this.successMessage.set('Login successful');
-          //   // this.errorMessage = null;
-          //   this.snackBar.open(this.successMessage(), 'Close', {
-          //     duration: 3000,
-          //     panelClass: ['success-snackbar']
-          //   });
-          // }),
-
-
-          // MIGRATED TO NGRX
-
-          // catchError((error) => {
-          //   this.errorMessage.set('Login failed: ' + error.message);
-          //   this.errorMessageExists$.next(true);
-          //   this.successMessage.set("");
-          //   return of(null);
-          // }),
-          // if false, stream stops (doesn't complete)
-          // filter((value) => {
-          //   return value !== null
-          // }),
-          
-          
-          // switchMap(() => { 
-          //   console.log(`in Login Form final redirect, nextPage = ${this.nextPageToRedirecTo()}`)
-          //   return from(this.router.navigate([this.nextPageToRedirecTo()])); 
-          // }),
-         
-
-       // )
-      //  .subscribe()
+    
 
     }
   }

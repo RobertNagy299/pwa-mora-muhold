@@ -1,174 +1,165 @@
-import { Injectable} from '@angular/core';
-import {Database, ref, set, get, query, orderByKey, limitToLast, remove} from '@angular/fire/database';
-import { catchError, concatMap, debounceTime, filter, from, interval, map, merge, Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
 
-//import { Chart, LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement } from 'chart.js';
-import {UptimeService} from './uptime.service';
-
-import {IndexedDBService} from './indexed-db.service'; // Import necessary Chart.js components
-import {fetchWithTimeout} from '../utils/fetchWithTimeout';
-import {ConstantsEnum} from '../utils/constants';
-import { TemperatureInterface } from '../interfaces/TemperatureInterface';
-import { ChartService } from '../utils/updateChart';
+import { ChartTypeEnum } from '../utils/constants';
+import { ChartService } from './chart-service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class TemperatureFirebaseService extends ChartService{
+export class TemperatureFirebaseService extends ChartService {
 
- // private chart: Chart | null = null;
-
-
-
-  constructor(private uptimeService: UptimeService,
-              private db: Database,
-              private indexedDBService: IndexedDBService) {
-    super();
-  }
-
-
-
-
-
-  fetchHistoricalData(limit: number) : Observable<TemperatureInterface[]> {
-        return fetchWithTimeout(
-          from(get(query(ref(this.db, ConstantsEnum.temperatureObjectStoreName), orderByKey(), limitToLast(limit + 2)))),
-          ConstantsEnum.timeoutLimit // Timeout after n seconds
-        ).pipe(
-          
-          map((data) => {
-                  // console.log(`Data in fetchHistorical = ${data}`);
-                   if (data === undefined || data === null || data.val() === null) {
-                
-                    return this.uptimeService.getCounterValue();
-                   }
-                   console.log("Data found, historical fetch is successful")
-                   const readings: TemperatureInterface[] = Object.values(data.val());
-                   return readings.slice(0, -2)
-           }),
-
-           filter((data) => typeof(data) === 'number'),
-
-           map((currentTime) => {
-            let temp = 0;
-            let initialTemp : TemperatureInterface = {uptime: currentTime, temperature: temp};
-            console.log(`inital temp = ${JSON.stringify(initialTemp)}`);
-            return [initialTemp];
-           }),
-         
-  
-          catchError((err) => {
-            console.error(`Error when fetching temperature values from firebase: ${err.message}`);
-            return this.indexedDBService.getLastNTemperatureReadingsExcludingLast2(limit);
-          })
-        )
-      
-    }
-  
-    generateTemperatureData(): Observable<void> {
-      //generate random values and upload them to firebase
-  
-      return interval(1000).pipe(
-        
-        concatMap( () => {
-            return this.uptimeService.getCounterValue() 
-          }
-        ),
-  
-        concatMap((currentUptime: number) => {
-          let temperatureData: TemperatureInterface = {uptime: 0, temperature: 0};
-          const randomTemperature = (Math.random()*40*(Math.random() < 0.5 ? -1 : 1)).toFixed(2); // Generate a random temperature value between -40 and + 40 degrees Celsius
-
-          temperatureData.uptime = currentUptime;
-          temperatureData.temperature = parseFloat(randomTemperature);
-  
-          return fetchWithTimeout(
-            from(set(ref(this.db, `${ConstantsEnum.temperatureObjectStoreName}/` + temperatureData.uptime), temperatureData)),
-            ConstantsEnum.timeoutLimit // Timeout after n seconds
-          )
-        })
-      )
-    }
-
-
-  listenForTemperatureUpdates() : Observable<TemperatureInterface[]> {
-    //fetch from firebase and return!
-    return interval(1000).pipe(
-      concatMap(() => {
-        return fetchWithTimeout(
-          from(get(query(ref(this.db, ConstantsEnum.temperatureObjectStoreName), orderByKey(), limitToLast(1)))),
-          ConstantsEnum.timeoutLimit
-        ).pipe(
-          map((data) => {
-            
-            if (data === undefined || data === null || data.val() === null) {
-              return [];
-            }
-            return Object.values(data.val()) as TemperatureInterface[];
-          }),
-          
-          
-        )
-      })
-      
-    ) 
-  
-  }
  
-
-  // Download temperature readings as JSON for logged-in users
-
-  downloadTemperatureData() : Observable<void> {
-    
-    return fetchWithTimeout(
-      from(get(ref(this.db, ConstantsEnum.temperatureObjectStoreName))), 
-      ConstantsEnum.timeoutLimit
-    ).pipe(
-
-      // Debounce is not working
-      debounceTime(1200),
-      
-      map((data) => {
-        this.downloadData(Object.values(data.val()));
-      }),
-
-      catchError((err) => {
-
-        console.error(`Error when fetching temperature from firebase: ${err.message}`);
-        
-        return this.indexedDBService.getAllTemperatureReadings().pipe(
-          
-          debounceTime(1200),
-
-          map((data) => {
-            this.downloadData(data)
-          })
-        )
-        
-      })
-    )
-  }
-
-  private downloadData(data: any[]): void {
-    const jsonData = JSON.stringify(data);
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'temperatureReadings.json';
-    a.click();
-    URL.revokeObjectURL(url); // Clean up the URL object after the download
+  constructor(
+    // private uptimeService: UptimeService,
+    // private db: Database,
+    // private indexedDBService: IndexedDBService
+  ) {
+    super(ChartTypeEnum.TEMPERATURE);
   }
 
 
 
-  deleteAllTemperatureReadings(): Observable<boolean> {
-    return merge(
-      fetchWithTimeout( from( remove(ref(this.db, ConstantsEnum.temperatureObjectStoreName))), ConstantsEnum.timeoutLimit*2),
-      this.indexedDBService.clearTemperatureReadings()
-    )
-  }
-  
+
+
+  // fetchHistoricalData(limit: number) : Observable<TemperatureInterface[]> {
+  //       return fetchWithTimeout(
+  //         from(get(query(ref(this.db, Constants.temperatureObjectStoreName), orderByKey(), limitToLast(limit + 2)))),
+  //         Constants.timeoutLimit // Timeout after n seconds
+  //       ).pipe(
+
+  //         map((data) => {
+  //                 // console.log(`Data in fetchHistorical = ${data}`);
+  //                  if (data === undefined || data === null || data.val() === null) {
+
+  //                   return this.uptimeService.getCounterValue();
+  //                  }
+  //                  console.log("Data found, historical fetch is successful")
+  //                  const readings: TemperatureInterface[] = Object.values(data.val());
+  //                  return readings.slice(0, -2)
+  //          }),
+
+  //          filter((data) => typeof(data) === 'number'),
+
+  //          map((currentTime) => {
+  //           let temp = 0;
+  //           let initialTemp : TemperatureInterface = {uptime: currentTime, temperature: temp};
+  //           console.log(`inital temp = ${JSON.stringify(initialTemp)}`);
+  //           return [initialTemp];
+  //          }),
+
+
+  //         catchError((err) => {
+  //           console.error(`Error when fetching temperature values from firebase: ${err.message}`);
+  //           return this.indexedDBService.getLastNTemperatureReadingsExcludingLast2(limit);
+  //         })
+  //       )
+
+  //   }
+
+  //   generateTemperatureData(): Observable<void> {
+  //     //generate random values and upload them to firebase
+
+  //     return interval(1000).pipe(
+
+  //       concatMap( () => {
+  //           return this.uptimeService.getCounterValue() 
+  //         }
+  //       ),
+
+  //       concatMap((currentUptime: number) => {
+  //         let temperatureData: TemperatureInterface = {uptime: 0, temperature: 0};
+  //         const randomTemperature = (Math.random()*40*(Math.random() < 0.5 ? -1 : 1)).toFixed(2); // Generate a random temperature value between -40 and + 40 degrees Celsius
+
+  //         temperatureData.uptime = currentUptime;
+  //         temperatureData.temperature = parseFloat(randomTemperature);
+
+  //         return fetchWithTimeout(
+  //           from(set(ref(this.db, `${Constants.temperatureObjectStoreName}/` + temperatureData.uptime), temperatureData)),
+  //           Constants.timeoutLimit // Timeout after n seconds
+  //         )
+  //       })
+  //     )
+  //   }
+
+
+  // listenForTemperatureUpdates() : Observable<TemperatureInterface[]> {
+  //   //fetch from firebase and return!
+  //   return interval(1000).pipe(
+  //     concatMap(() => {
+  //       return fetchWithTimeout(
+  //         from(get(query(ref(this.db, Constants.temperatureObjectStoreName), orderByKey(), limitToLast(1)))),
+  //         Constants.timeoutLimit
+  //       ).pipe(
+  //         map((data) => {
+
+  //           if (data === undefined || data === null || data.val() === null) {
+  //             return [];
+  //           }
+  //           return Object.values(data.val()) as TemperatureInterface[];
+  //         }),
+
+
+  //       )
+  //     })
+
+  //   ) 
+
+  // }
+
+
+  // // Download temperature readings as JSON for logged-in users
+
+  // downloadTemperatureData() : Observable<void> {
+
+  //   return fetchWithTimeout(
+  //     from(get(ref(this.db, Constants.temperatureObjectStoreName))), 
+  //     Constants.timeoutLimit
+  //   ).pipe(
+
+  //     // Debounce is not working
+  //     debounceTime(1200),
+
+  //     map((data) => {
+  //       this.downloadData(Object.values(data.val()));
+  //     }),
+
+  //     catchError((err) => {
+
+  //       console.error(`Error when fetching temperature from firebase: ${err.message}`);
+
+  //       return this.indexedDBService.getAllTemperatureReadings().pipe(
+
+  //         debounceTime(1200),
+
+  //         map((data) => {
+  //           this.downloadData(data)
+  //         })
+  //       )
+
+  //     })
+  //   )
+  // }
+
+  // private downloadData(data: any[]): void {
+  //   const jsonData = JSON.stringify(data);
+  //   const blob = new Blob([jsonData], { type: 'application/json' });
+  //   const url = URL.createObjectURL(blob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = 'temperatureReadings.json';
+  //   a.click();
+  //   URL.revokeObjectURL(url); // Clean up the URL object after the download
+  // }
+
+
+
+  // deleteAllTemperatureReadings(): Observable<boolean> {
+  //   return merge(
+  //     fetchWithTimeout( from( remove(ref(this.db, Constants.temperatureObjectStoreName))), Constants.timeoutLimit*2),
+  //     this.indexedDBService.clearTemperatureReadings()
+  //   )
+  // }
+
 
   // // teacher's material
   // private readonly collectionName = 'voltage';

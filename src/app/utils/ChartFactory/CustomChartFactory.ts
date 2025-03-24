@@ -81,11 +81,18 @@ export class ChartFactory {
 
   private readonly voltageOptions = {
     ...this.DefaultDataOptions,
+    
     scales: {
       y: {
         title: {
           display: true,
           text: 'Voltage (V)',
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Uptime (s)',
         }
       }
     }
@@ -119,6 +126,13 @@ export class ChartFactory {
         title: {
           display: true,
           text: 'Temperature (°C)',
+        }
+      },
+
+      x: {
+        title: {
+          display: true,
+          text: 'Uptime (s)',
         }
       }
     }

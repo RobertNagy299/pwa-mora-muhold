@@ -1,15 +1,7 @@
-import {Injectable} from '@angular/core';
-import {Database, ref, set, get, query, orderByKey, limitToLast, remove} from '@angular/fire/database';
-import { catchError,  concatMap, debounceTime, from, interval, map, merge, Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
 
-import {UptimeService} from './uptime.service';
-import {IndexedDBService} from './indexed-db.service';
-import {ConstantsEnum} from '../utils/constants';
-import {fetchWithTimeout} from '../utils/fetchWithTimeout';
-import { VoltageInterface } from '../interfaces/VoltageInterface';
-import { ChartService} from '../utils/updateChart';
-
-// Import necessary Chart.js components
+import { ChartTypeEnum } from '../utils/constants';
+import { ChartService } from './chart-service';
 
 
 @Injectable({
@@ -17,147 +9,148 @@ import { ChartService} from '../utils/updateChart';
 })
 export class VoltageFirebaseService extends ChartService {
 
- // private chart: Chart | null = null;
 
-  constructor(private uptimeService: UptimeService,
-              private db: Database,
-              private indexedDBService: IndexedDBService
+
+  constructor(
+    // private uptimeService: UptimeService,
+    // private db: Database,
+    // private indexedDBService: IndexedDBService,
   ) {
-    super();
+    super(ChartTypeEnum.VOLTAGE);
   }
 
- 
 
-  fetchHistoricalData(limit: number) : Observable<VoltageInterface[]> {
-      return fetchWithTimeout(
-        from(get(query(ref(this.db, ConstantsEnum.voltageObjectStoreName), orderByKey(), limitToLast(limit + 2)))),
-        ConstantsEnum.timeoutLimit // Timeout after n seconds
-      ).pipe(
-        
-        map((data) => {
-         // console.log(`Data in fetchHistorical = ${data}`);
-          if (data === undefined || data === null) {
-            return [];
-          }
-          const readings: VoltageInterface[] = Object.values(data.val());
-          return readings.slice(0, -2)
-        }),
 
-        catchError((err) => {
-          console.error(`Error when fetching voltage values from firebase: ${err.message}`);
-          return this.indexedDBService.getLastNVoltageReadingsExcludingLast2(limit);
-        })
-      )
-    
-  }
+  // fetchHistoricalData(limit: number): Observable<VoltageInterface[]> {
+  //   return fetchWithTimeout(
+  //     from(get(query(ref(this.db, Constants.voltageObjectStoreName), orderByKey(), limitToLast(limit + 2)))),
+  //     Constants.timeoutLimit // Timeout after n seconds
+  //   ).pipe(
+
+  //     map((data) => {
+  //       // console.log(`Data in fetchHistorical = ${data}`);
+  //       if (data === undefined || data === null) {
+  //         return [];
+  //       }
+  //       const readings: VoltageInterface[] = Object.values(data.val());
+  //       return readings.slice(0, -2)
+  //     }),
+
+  //     catchError((err) => {
+  //       console.error(`Error when fetching voltage values from firebase: ${err.message}`);
+  //       return this.indexedDBService.getLastNVoltageReadingsExcludingLast2(limit);
+  //     })
+  //   )
+
+  // }
 
 
   // Listen for voltage updates from Firebase or generate random data if offline
 
-  generateVoltageData(): Observable<void> {
-    //generate random values and upload them to firebase
+  // generateVoltageData(): Observable<void> {
+  //   //generate random values and upload them to firebase
 
-    return interval(1000).pipe(
-      
-      concatMap( () => {
-          return this.uptimeService.getCounterValue() 
-        }
-      ),
+  //   return interval(1000).pipe(
 
-      concatMap((currentUptime: number) => {
-        let voltageData: VoltageInterface = {uptime: 0, voltage: 0};
-        const randomVoltage = (Math.random() * 5).toFixed(2); // Generate a random voltage between 0 and 5 volts
-        voltageData.uptime = currentUptime;
-        voltageData.voltage = parseFloat(randomVoltage);
+  //     concatMap(() => {
+  //       return this.uptimeService.getCounterValue()
+  //     }
+  //     ),
 
-        return fetchWithTimeout(
-          from(set(ref(this.db, `${ConstantsEnum.voltageObjectStoreName}/` + voltageData.uptime), voltageData)),
-          ConstantsEnum.timeoutLimit // Timeout after n seconds
-        )
-      })
-    )
-  }
+  //     concatMap((currentUptime: number) => {
+  //       let voltageData: VoltageInterface = { uptime: 0, voltage: 0 };
+  //       const randomVoltage = (Math.random() * 5).toFixed(2); // Generate a random voltage between 0 and 5 volts
+  //       voltageData.uptime = currentUptime;
+  //       voltageData.voltage = parseFloat(randomVoltage);
+
+  //       return fetchWithTimeout(
+  //         from(set(ref(this.db, `${Constants.voltageObjectStoreName}/` + voltageData.uptime), voltageData)),
+  //         Constants.timeoutLimit // Timeout after n seconds
+  //       )
+  //     })
+  //   )
+  // }
 
   // WORKS ?? KIND OF
-  listenForVoltageUpdates() : Observable<VoltageInterface[]> {
-    //fetch from firebase and return!
-    return interval(1000).pipe(
-      concatMap(() => {
-        return fetchWithTimeout(
-          from(get(query(ref(this.db, ConstantsEnum.voltageObjectStoreName), orderByKey(), limitToLast(1)))),
-          ConstantsEnum.timeoutLimit
-        ).pipe(
-          map((data) => {
-            //console.log(`data in listenForVoltageUpdates() = ${data}`)
-            if (data === undefined || data === null || data.val() === null)  {
-              //console.error("Undefined voltage data here");
-              return [];
-            }
-            return Object.values(data.val()) as VoltageInterface[];
-          })
-          
-        )
-      })
-      
-    ) 
+  // listenForVoltageUpdates(): Observable<VoltageInterface[]> {
+  //   //fetch from firebase and return!
+  //   return interval(1000).pipe(
+  //     concatMap(() => {
+  //       return fetchWithTimeout(
+  //         from(get(query(ref(this.db, Constants.voltageObjectStoreName), orderByKey(), limitToLast(1)))),
+  //         Constants.timeoutLimit
+  //       ).pipe(
+  //         map((data) => {
+  //           //console.log(`data in listenForVoltageUpdates() = ${data}`)
+  //           if (data === undefined || data === null || data.val() === null) {
+  //             //console.error("Undefined voltage data here");
+  //             return [];
+  //           }
+  //           return Object.values(data.val()) as VoltageInterface[];
+  //         })
 
-  }
+  //       )
+  //     })
 
+  //   )
 
-  
-
-  downloadVoltageData() : Observable<void> {
-    
-    return fetchWithTimeout(
-      from(get(ref(this.db, ConstantsEnum.voltageObjectStoreName))), 
-      ConstantsEnum.timeoutLimit
-    ).pipe(
-
-      debounceTime(1200),
-      
-
-      map((data) => {
-        this.downloadData(Object.values(data.val()));
-      }),
-
-      catchError((err) => {
-
-        console.error(`Error when fetching voltage from firebase: ${err.message}`);
-        
-        return this.indexedDBService.getAllVoltageReadings().pipe(
-
-          debounceTime(1200),
-          
-
-          map((data) => {
-            this.downloadData(data)
-          })
-        )
-        
-      })
-    )
-  }
-
-
-  private downloadData(data: any[]): void {
-    const jsonData = JSON.stringify(data);
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'voltageReadings.json';
-    a.click();
-    URL.revokeObjectURL(url); // Clean up the URL object after the download
-  }
+  // }
 
 
 
-deleteAllVoltageReadings(): Observable<boolean> {
-  return merge(
-    fetchWithTimeout( from( remove(ref(this.db, ConstantsEnum.voltageObjectStoreName))), ConstantsEnum.timeoutLimit*2),
-    this.indexedDBService.clearVoltageReadings()
-  )
-}
+
+  // downloadVoltageData(): Observable<void> {
+
+  //   return fetchWithTimeout(
+  //     from(get(ref(this.db, Constants.voltageObjectStoreName))),
+  //     Constants.timeoutLimit
+  //   ).pipe(
+
+  //     debounceTime(1200),
+
+
+  //     map((data) => {
+  //       this.downloadData(Object.values(data.val()));
+  //     }),
+
+  //     catchError((err) => {
+
+  //       console.error(`Error when fetching voltage from firebase: ${err.message}`);
+
+  //       return this.indexedDBService.getAllVoltageReadings().pipe(
+
+  //         debounceTime(1200),
+
+
+  //         map((data) => {
+  //           this.downloadData(data)
+  //         })
+  //       )
+
+  //     })
+  //   )
+  // }
+
+
+  // private downloadData(data: any[]): void {
+  //   const jsonData = JSON.stringify(data);
+  //   const blob = new Blob([jsonData], { type: 'application/json' });
+  //   const url = URL.createObjectURL(blob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = 'voltageReadings.json';
+  //   a.click();
+  //   URL.revokeObjectURL(url); // Clean up the URL object after the download
+  // }
+
+
+
+  // deleteAllVoltageReadings(): Observable<boolean> {
+  //   return merge(
+  //     fetchWithTimeout(from(remove(ref(this.db, Constants.voltageObjectStoreName))), Constants.timeoutLimit * 2),
+  //     this.indexedDBService.clearVoltageReadings()
+  //   )
+  // }
 
 
 }

@@ -4,7 +4,7 @@ import { Store } from "@ngrx/store";
 import { catchError, combineLatestWith, exhaustMap, filter, interval, map, of } from "rxjs";
 import { UptimeService } from "../../services/uptime.service";
 import { MyStoreInterface } from "../app.store";
-import { incrementUptime, loadUptime, setUptime, startIncrementing } from "./uptimeCounterFeature.actions";
+import { incrementUptime, loadUptime, resetUptime, setUptime, startIncrementing } from "./uptimeCounterFeature.actions";
 import { selectUptime } from "./uptimeCounterFeature.selectors";
 
 
@@ -15,6 +15,12 @@ export class UptimeEffects {
 
   }
 
+  resetUptime$ = createEffect(() => this.actions$.pipe(
+    ofType(resetUptime),
+    exhaustMap(() => {
+      return this.uptimeService.resetCounterValue();
+    })
+  ), {dispatch: false});
 
   loadData$ = createEffect(() => this.actions$.pipe(
     ofType(loadUptime.type),

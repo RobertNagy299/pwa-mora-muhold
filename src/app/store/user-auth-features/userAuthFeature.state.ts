@@ -1,13 +1,13 @@
 import { User } from "../../interfaces/User";
 import { AuthStatesEnum } from "../../utils/constants";
 
-export interface userAuthState {
+export interface UserAuthState {
   currentUser: User | null;
   isLoggedIn: boolean;
   currentAuthState: AuthStatesEnum;  
 }
 
-export const initialUserAuthState: userAuthState = {
+export const initialUserAuthState: UserAuthState = {
   
   currentUser: null,
   isLoggedIn: false,

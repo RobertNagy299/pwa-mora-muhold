@@ -4,10 +4,11 @@ import { Database, ref, set, get, DataSnapshot } from '@angular/fire/database';
 import { catchError, from, map, mergeMap, Observable, of, tap } from 'rxjs';
 import { IndexedDBService } from './indexed-db.service';
 import { fetchWithTimeout } from '../utils/fetchWithTimeout';
-import { ConstantsEnum } from '../utils/constants';
+import { Constants } from '../utils/constants';
 import { MyStoreInterface } from '../store/app.store';
 import { select, Store } from '@ngrx/store';
 import { selectUptime } from '../store/uptime-counter-features/uptimeCounterFeature.selectors';
+import { loadUptime, startIncrementing } from '../store/uptime-counter-features/uptimeCounterFeature.actions';
 
 @Injectable({
   providedIn: 'root'
@@ -16,33 +17,36 @@ import { selectUptime } from '../store/uptime-counter-features/uptimeCounterFeat
 export class UptimeService {
 
   private db: Database = inject(Database);
-  
+  public uptimeValue$?: Observable<number>;
 
- 
+
+
   constructor(
     private readonly indexedDBService: IndexedDBService,
     private readonly store: Store<MyStoreInterface>,
 
-  ) { 
+  ) {
+  }
 
-    this.store.pipe(select(selectUptime)).pipe(
-      tap((uptime: number) => {
-        return this.saveCounterValue(uptime);
-      })
-    )
-
+  public init(): void {
+    this.store.dispatch(loadUptime());
+    this.store.dispatch(startIncrementing());
+    this.uptimeValue$ = this.store.pipe(select(selectUptime));
   }
 
 
+  public resetCounterValue(): Observable<boolean> {
+    return this.saveCounterValue(0);
+  }
 
   // Save the counter value in Realtime Database
 
   public saveCounterValue(seconds: number): Observable<boolean> {
-   
+
     //console.log('Data = ', seconds);
     return fetchWithTimeout(
-      from(set(ref(this.db, ConstantsEnum.uptimeObjectStoreName), seconds)),
-      ConstantsEnum.timeoutLimit
+      from(set(ref(this.db, Constants.get('uptimeObjectStoreName')), seconds)),
+      Constants.get('timeoutLimit')
     ).pipe(
       //tap(() => console.log('kaka in fetch')),
       mergeMap(() => {
@@ -58,22 +62,22 @@ export class UptimeService {
 
   }
 
-// backendHandler implements IBackend  {
+  // backendHandler implements IBackend  {
 
 
-//}
+  //}
 
-// {provide: IBackend, useValue: fireBaseBackend}
-// {provide: IBackend, useValue: idbBaseBackend}
-// {provide: IBackend, useValue: javaBaseBackend}
+  // {provide: IBackend, useValue: fireBaseBackend}
+  // {provide: IBackend, useValue: idbBaseBackend}
+  // {provide: IBackend, useValue: javaBaseBackend}
 
   // Get the counter value from Realtime Database
 
   public getCounterValue(): Observable<number> {
 
     return fetchWithTimeout(
-      from(get(ref(this.db, ConstantsEnum.uptimeObjectStoreName))),
-      ConstantsEnum.timeoutLimit)
+      from(get(ref(this.db, Constants.get('uptimeObjectStoreName')))),
+      Constants.get('timeoutLimit'))
       .pipe(
         map((snapshot: DataSnapshot) => {
           return snapshot.val();

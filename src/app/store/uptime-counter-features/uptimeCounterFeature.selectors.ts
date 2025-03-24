@@ -4,8 +4,8 @@ import { UptimeState } from "./uptimeCounterFeature.state";
 export const selectUptimeState = createFeatureSelector<UptimeState>('uptime');
 
 export const selectUptime = createSelector(
-    selectUptimeState,
-    (state) => state.uptime,
+  selectUptimeState,
+  (state) => state.uptime,
 )
 
 

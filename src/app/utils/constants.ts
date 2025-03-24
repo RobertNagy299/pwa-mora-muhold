@@ -1,17 +1,15 @@
-export enum ConstantsEnum {
-  timeoutLimit = 800,
-  voltageObjectStoreName = "voltageReadings",
-  temperatureObjectStoreName = "temperatureReadings",
-  uptimeObjectStoreName = "uptime",
-  dataLimit = 30,
-  splashScreenDisplayTime = 2000, 
-
-}
-
+export const Constants: Map<string, any> = new Map<string, any>([
+  ["timeoutLimit", 800],
+  ["voltageObjectStoreName", "voltageReadings"],
+  ["temperatureObjectStoreName", "temperatureReadings"],
+  ["uptimeObjectStoreName" , "uptime"],
+  ["dataLimit" , 30],
+  ["splashScreenDisplayTime" , 2000], 
+])
 
 export enum ChartTypeEnum {
-  VOLTAGE = 0,
-  TEMPERATURE = 1,
+  VOLTAGE = 'voltage',
+  TEMPERATURE = 'temperature',
 }
 
 export const pagesThatALoggedInUserShouldNotAccess = new Set([

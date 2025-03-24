@@ -1,19 +1,24 @@
-import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
-import {VoltageFirebaseService} from '../../services/voltage-firebase.service';
-import {debounceTime, filter, Subject, switchMap, tap} from 'rxjs';
-import {AuthService} from '../../services/auth.service';
-import {MatIcon} from '@angular/material/icon';
-import {MatButton} from '@angular/material/button';
-import {NgIf} from '@angular/common';
-import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
-import {ChartTypeEnum, ConstantsEnum} from '../../utils/constants';
-import {GradientTextDirective} from '../../directives/gradient-text.directive';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
+import { VoltageFirebaseService } from '../../services/voltage-firebase.service';
+import { debounceTime, filter, map, Subject, switchMap, tap } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { MatIcon } from '@angular/material/icon';
+import { MatButton } from '@angular/material/button';
+import { NgIf } from '@angular/common';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { ChartTypeEnum, Constants } from '../../utils/constants';
+import { GradientTextDirective } from '../../directives/gradient-text.directive';
 import { VoltageInterface } from '../../interfaces/VoltageInterface';
 import { AsyncPipe } from '@angular/common';
 import Chart from 'chart.js/auto';
 
 import { LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement, LineController } from 'chart.js';
 import { ChartFactory } from '../../utils/ChartFactory/CustomChartFactory';
+import { DataPointModel } from '../../services/chart-service';
+import { select, Store } from '@ngrx/store';
+import { MyStoreInterface } from '../../store/app.store';
+import { fetchHistoricalVoltageData, startGeneratingData, startListeningForVoltageDataChanges, stopGeneratingData, stopListeningForVoltageDataChanges } from '../../store/voltage-features/voltage-feature.actions';
+import { selectVoltageArray } from '../../store/voltage-features/voltage-feature.selector';
 
 
 @UntilDestroy()
@@ -35,71 +40,58 @@ export class VoltageChartComponent implements OnInit, OnDestroy {
 
   private clickSubject = new Subject<void>()
   private chart!: Chart;
-  
+
   constructor(
-    protected authService: AuthService,
-    private voltageFirebaseService: VoltageFirebaseService,
+    protected readonly authService: AuthService,
+    private readonly voltageFirebaseService: VoltageFirebaseService,
     private el: ElementRef,
-    private chartFactory: ChartFactory
+    private readonly chartFactory: ChartFactory,
+    private readonly store: Store<MyStoreInterface>,
+
   ) {
     Chart.register(LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement, LineController)
+
+
   }
 
 
   ngOnInit(): void {
-    const canvas = this.el.nativeElement.querySelector('#realtimeChart');
 
     // Initialize the chart
+    const canvas = this.el.nativeElement.querySelector('#realtimeChart');
     this.chart = this.chartFactory.createChart(canvas, ChartTypeEnum.VOLTAGE);
-    
     this.clickSubject.pipe(
-      
+
       debounceTime(1200),
-      
+
       switchMap(() => {
-        return this.voltageFirebaseService.downloadVoltageData()
+        return this.voltageFirebaseService.downloadData()
       })
     ).subscribe()
     // Fetch historical data and update the chart
 
-    // ok
-    this.voltageFirebaseService.fetchHistoricalData(ConstantsEnum.dataLimit)
-    .pipe(
-
-      filter((data) => data !== undefined),
-
-      tap((data: VoltageInterface[]) => {
-        // CHANGED
-      // console.log(`[voltageChart Component] Data inside FetchHistoricalData = ${JSON.stringify(data)}`); // ERROR, THIS SHOULD NOT BE UNDEFINED
-
-        this.voltageFirebaseService.updateChart(this.chart, data);
-      })
-    ).subscribe()
-
-    this.voltageFirebaseService.generateVoltageData().pipe(untilDestroyed(this)).subscribe();
-
-    // Listen for voltage updates and update the chart
   
+    this.store.dispatch(fetchHistoricalVoltageData());
+    this.store.pipe(select(selectVoltageArray)).pipe(
 
-     this.voltageFirebaseService.listenForVoltageUpdates()
-    .pipe(
-      
-      filter((data) => data !== undefined),
+      filter((data) => data !== null),
+      untilDestroyed(this)
 
-      tap((data: VoltageInterface[]) => {
-       //console.log(`[voltageChart Component] Data inside voltageSubscription = ${JSON.stringify(data)}`); // ERROR, THIS SHOULD NOT BE UNDEFINED
-        this.voltageFirebaseService.updateChart(this.chart, data);
-      }),
-
-      untilDestroyed(this),
-    ).subscribe()
+    ).subscribe((data: VoltageInterface[]) => {
+      this.voltageFirebaseService.updateChart(this.chart, data);
+    })
 
 
-   
+    this.store.dispatch(startGeneratingData());
+
+    
+    // Listen for voltage updates and update the chart
+    this.store.dispatch(startListeningForVoltageDataChanges());
+
   }
   // Method to trigger download for logged-in users
-  
-  downloadVoltageData() : void {
+
+  downloadVoltageData(): void {
     this.clickSubject.next();
   }
 
@@ -107,8 +99,10 @@ export class VoltageChartComponent implements OnInit, OnDestroy {
     Chart.unregister(LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement, LineController);
     this.chart.clear();
     this.chart.destroy();
+    this.store.dispatch(stopGeneratingData());
+    this.store.dispatch(stopListeningForVoltageDataChanges());
   }
- 
+
 
 }
 

@@ -6,12 +6,13 @@ import { MatButton } from '@angular/material/button';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { TemperatureFirebaseService } from '../../services/temperature-firebase.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { ChartTypeEnum, ConstantsEnum } from '../../utils/constants';
+import { ChartTypeEnum, Constants } from '../../utils/constants';
 import { GradientTextDirective } from '../../directives/gradient-text.directive';
-import { TemperatureInterface } from '../../interfaces/TemperatureInterface';
+
 import {Chart} from 'chart.js/auto';
 import { LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement,LineController, PointElement, ArcElement } from 'chart.js';
 import { ChartFactory } from '../../utils/ChartFactory/CustomChartFactory';
+import { DataPointModel } from '../../services/chart-service';
 
 
 @UntilDestroy()
@@ -56,16 +57,16 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
       debounceTime(1200),
 
       switchMap(() => {
-        return this.temperatureChartService.downloadTemperatureData()
+        return this.temperatureChartService.downloadData()
       })
     ).subscribe()
 
-    this.temperatureChartService.fetchHistoricalData(ConstantsEnum.dataLimit)
+    this.temperatureChartService.fetchHistoricalData(Constants.get('dataLimit'))
       .pipe(
 
         filter((data) => data !== undefined),
 
-        tap((data: TemperatureInterface[]) => {
+        tap((data: DataPointModel[]) => {
           //console.log("data fetched historically =  " + data)
           this.temperatureChartService.updateChart(this.chart, data);
         })
@@ -73,9 +74,9 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
 
     // Listen for voltage updates and update the chart
 
-    this.temperatureChartService.generateTemperatureData().pipe(untilDestroyed(this)).subscribe()
+    this.temperatureChartService.generateData().pipe(untilDestroyed(this)).subscribe()
 
-    this.temperatureChartService.listenForTemperatureUpdates()
+    this.temperatureChartService.listenForUpdates()
       .pipe(
         //tap((data) => console.log(`inside listenForTempUpdates in the component. Data = ${data} `)),
 

@@ -79,27 +79,15 @@ export class ProfileComponent {
         }
       }),
 
-      startWith({user: null, hasInternetAccess: false}),
+      startWith({ user: null, hasInternetAccess: false }),
 
       catchError(() => {
-        return of({user: null, hasInternetAccess: false});
+        return of({ user: null, hasInternetAccess: false });
       })
 
     )
 
   }
-
-  // ngOnInit(): void {
-  //   this.authService.getUserData()
-  //   .pipe(
-  //     map(user => {
-  //       console.log(`User inside Profile page = ${user}`);
-  //       this.userData = user;
-  //     }),
-
-  //     untilDestroyed(this))
-  //   .subscribe();
-  // }
 
   private passwordsMatchValidator(group: FormGroup): { [key: string]: boolean } | null {
     const newPassword = group.get('newPassword')?.value;
@@ -119,8 +107,8 @@ export class ProfileComponent {
 
 
       merge(
-        this.voltageService.deleteAllVoltageReadings(),
-        this.temperatureService.deleteAllTemperatureReadings(),
+        this.voltageService.deleteAllReadings(),
+        this.temperatureService.deleteAllReadings(),
 
         // old solution, works!
 
@@ -180,7 +168,7 @@ export class ProfileComponent {
     // if (!currentPassword || !newPassword) {
     //   return ;
     // }
-  
+
     this.authService.changePassword(currentPassword, newPassword)
       .pipe(
 
@@ -239,8 +227,8 @@ export class ProfileComponent {
 
 
   deleteUser(): void {
-   
-    if(!this.deleteForm.valid) {
+
+    if (!this.deleteForm.valid) {
       return;
     }
 
@@ -254,18 +242,18 @@ export class ProfileComponent {
 
     // this.store.dispatch(deleteAccount({ deleteForm: this.deleteForm }));
 
-      this.authService.deleteUser(email, password)
+    this.authService.deleteUser(email, password)
       .pipe(
 
-       debounceTime(1200),
+        debounceTime(1200),
 
         tap(() => {
-            this.snackBar.open('User deleted successfully!', 'Close', {
-              duration: 3000,
-              panelClass: ['success-snackbar']
-            });
+          this.snackBar.open('User deleted successfully!', 'Close', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
 
-          }
+        }
         ),
 
         catchError(error => {
@@ -273,11 +261,11 @@ export class ProfileComponent {
           if (error.toString().includes("wrong-password")) {
             // console.log("Wrong password");
             this.snackBar.open('Failed to delete user. The password you entered is incorrect', 'Close', {
-                duration: 3000,
-                panelClass: ['error-snackbar']
-              }  
-            );   
-          } 
+              duration: 3000,
+              panelClass: ['error-snackbar']
+            }
+            );
+          }
 
           else {
             this.snackBar.open('Failed to delete user.', 'Close', {

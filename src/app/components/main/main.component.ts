@@ -25,11 +25,11 @@ import {NgIf} from '@angular/common';
 import {AuthService} from '../../services/auth.service';
 import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
 import { filter, first } from 'rxjs';
-import { HomeService } from '../../services/home-service.service';
 import { RoutingRedirectService } from '../../services/routing-redirect.service';
 import { Store } from '@ngrx/store';
 import { MyStoreInterface } from '../../store/app.store';
 import { logout } from '../../store/user-auth-features/userAuthFeature.actions';
+import { UptimeService } from '../../services/uptime.service';
 
 @UntilDestroy()
 @Component({
@@ -67,16 +67,16 @@ export class MainComponent implements OnInit, AfterViewInit{
     
     protected readonly authService: AuthService,
     private readonly themeService: ThemeService, 
-    private readonly homeService: HomeService, // needed to start the counter in the background
     protected readonly routingRedirectService: RoutingRedirectService,
-    private readonly store: Store<MyStoreInterface>
+    private readonly store: Store<MyStoreInterface>,
+    private readonly uptimeService: UptimeService,
   ) {
   }
 
   ngOnInit() {
 
    
-    this.homeService.init();
+    this.uptimeService.init();
     this.authService.init();
 
 

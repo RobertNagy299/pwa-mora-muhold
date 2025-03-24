@@ -4,43 +4,47 @@
 @import "./app/breakpoints-variables";
 
 // Define a dark theme
-$dark-theme: mat.define-theme((
-  color: (
-    theme-type: dark,
-    primary: mat.$cyan-palette,
-  ),
-));
+$dark-theme: mat.define-theme((color: (theme-type: dark,
+        primary: mat.$cyan-palette,
+      ),
+    ));
 
 // Define a light theme
-$light-theme: mat.define-theme((
-  color: (
-    theme-type: light,
-    primary: mat.$cyan-palette,
-  ),
-));
+$light-theme: mat.define-theme((color: (theme-type: light,
+        primary: mat.$cyan-palette,
+      ),
+    ));
 
 .theme-dark {
   @include mat.all-component-colors($dark-theme);
-  --error-color: #f44336; /* Red for dark theme error */
-  --success-color: #4caf50; /* Green for dark theme success */
-  --secondary-color: rgb(255,110,17);
+  --error-color: #f44336;
+  /* Red for dark theme error */
+  --success-color: #4caf50;
+  /* Green for dark theme success */
+  --secondary-color: rgb(255, 110, 17);
   --warning-color: rgb(255, 171, 171);
   --danger-color: rgb(255, 0, 0);
 }
 
 .theme-light {
   @include mat.all-component-colors($light-theme);
-  --error-color: #d32f2f; /* Dark red for light theme error */
-  --success-color: #388e3c; /* Dark green for light theme success */
+  --error-color: #d32f2f;
+  /* Dark red for light theme error */
+  --success-color: #388e3c;
+  /* Dark green for light theme success */
   --secondary-color: rgb(255, 98, 0);
   --warning-color: rgb(255, 0, 0);
   --danger-color: rgb(199, 0, 0);
 }
 
-html, body { height: 100%; }
-body { 
+html,
+body {
+  height: 100%;
+}
+
+body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;  
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
 .sidenav-container {
@@ -60,17 +64,19 @@ body {
 }
 
 .success-message {
-  color: var(--success-color); /* Use the success color from the theme */
+  color: var(--success-color);
+  /* Use the success color from the theme */
   margin-top: 10px;
 }
 
 .error-message {
-  color: var(--error-color); /* Use the error color from the theme */
+  color: var(--error-color);
+  /* Use the error color from the theme */
   margin-top: 10px;
 }
 
 .error-snackbar {
-  --mdc-snackbar-container-color: #ffbc58;  
+  --mdc-snackbar-container-color: #ffbc58;
   --mat-snack-bar-button-color: #2e2e2eda;
   --mdc-snackbar-supporting-text-color: #2e2e2eda;
   // --mat-snack-bar-button-color: var(--secondary-color);
@@ -91,39 +97,48 @@ body {
 .chart {
   margin-top: 24px;
   max-width: 80vw;
-  max-height: 80vh;
+  max-height: 66vh;
+  margin-bottom: 64px;
 }
 
 
-  h1 {
-    font-size: 2.6rem !important;
-  }
-  h2 {
-    font-size: 2rem !important;
-  }
-  .chart {
-    max-width: 60vw;
-  }
+h1 {
+  font-size: 2.6rem !important;
+}
+
+h2 {
+  font-size: 2rem !important;
+}
+
+.chart {
+  max-width: 60vw;
+}
 
 @media only screen and (max-width: $large) {
   h1 {
     font-size: 2.4rem !important;
   }
+
   h2 {
     font-size: 2rem !important;
   }
+
   .chart {
     max-width: 66vw;
   }
 }
-@media only screen and (max-width: $laptop) {
- .chart {
-   max-width: 72vw;
 
- }
+@media only screen and (max-width: $laptop) {
+  .chart {
+    max-width: 72vw;
+    margin-bottom: 48px;
+
+  }
+
   h1 {
     font-size: 2rem !important;
   }
+
   h2 {
     font-size: 1.8rem !important;
   }
@@ -133,9 +148,11 @@ body {
   .chart {
     max-width: 90vw;
   }
+
   h1 {
     font-size: 1.8rem !important;
   }
+
   h2 {
     font-size: 1.6rem !important;
   }
@@ -144,15 +161,19 @@ body {
 @media only screen and (max-width: $mobile) {
   .chart {
     max-width: 96vw;
+    margin-bottom: 24px;
+
   }
+
   h1 {
     font-size: 1.6rem !important;
   }
+
   h2 {
     font-size: 1.4rem !important;
   }
+
   p {
     font-size: 14px !important;
   }
 }
-

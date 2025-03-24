@@ -4,7 +4,7 @@ import { UntilDestroy } from '@ngneat/until-destroy';
 import { AuthService } from '../../services/auth.service';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { GradientTextDirective } from '../../directives/gradient-text.directive';
-import { HomeService } from '../../services/home-service.service';
+import { UptimeService } from '../../services/uptime.service';
 
 @UntilDestroy()
 @Component({
@@ -17,13 +17,11 @@ import { HomeService } from '../../services/home-service.service';
 })
 export class HomeComponent {
  
- // protected currentUserFromStore$ : Observable<User | null>;
 
   constructor(
     protected authService: AuthService,
-    protected homeService: HomeService,
+    protected uptimeService: UptimeService,
   ) {
-  // this.currentUserFromStore$ = this.store.pipe(select(selectCurrentUser))
   }
 
 
