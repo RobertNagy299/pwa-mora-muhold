@@ -6,7 +6,6 @@ import { MatInput } from '@angular/material/input';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCard, MatCardContent, MatCardTitle } from '@angular/material/card';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { User } from '../../interfaces/User';
 import { TemperatureFirebaseService } from '../../services/temperature-firebase.service';
 import { VoltageFirebaseService } from '../../services/voltage-firebase.service';
 import { MatDivider } from '@angular/material/divider';
@@ -45,7 +44,6 @@ import { ProfilePageData } from '../../interfaces/profile-page-data';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProfileComponent {
-  //userData: User | null = null;
   passwordForm!: FormGroup;
   deleteForm!: FormGroup;
 
@@ -78,15 +76,11 @@ export class ProfileComponent {
           user,
         }
       }),
-
       startWith({ user: null, hasInternetAccess: false }),
-
       catchError(() => {
         return of({ user: null, hasInternetAccess: false });
       })
-
     )
-
   }
 
   private passwordsMatchValidator(group: FormGroup): { [key: string]: boolean } | null {
@@ -95,28 +89,14 @@ export class ProfileComponent {
     return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
-
-
-
   // NEW VERSION
   // Confirmed to be acceptable
   resetData(): Observable<void> {
     if (confirm('Are you sure you want to reset the data?')) {
-
       this.store.dispatch(resetUptime())
-
-
       merge(
         this.voltageService.deleteAllReadings(),
         this.temperatureService.deleteAllReadings(),
-
-        // old solution, works!
-
-        // this.uptimeService.resetUptimeCounter().pipe(
-        //   tap(() => {
-        //     this.homeService.setCounterValue(0);
-        //   })
-        // ),
       ).pipe(
         tap(() => {
 
@@ -140,51 +120,27 @@ export class ProfileComponent {
 
           return of(null)
         }),
-
-
-
       ).subscribe()
-
     }
     return of();
   }
 
-
-
-
   changePassword(): void {
-
-
-    //  this.store.dispatch(changePassword({passwordForm: this.passwordForm}));
-
-
     if (!this.passwordForm.valid) {
       return;
     }
-
     const currentPassword = this.passwordForm.get('currentPassword')?.value;
     const newPassword = this.passwordForm.get('newPassword')?.value;
-
-    // if (!currentPassword || !newPassword) {
-    //   return ;
-    // }
-
     this.authService.changePassword(currentPassword, newPassword)
       .pipe(
-
         // MIGRATED TO NGRX
         debounceTime(1200),
-
-
         tap(() => {
           this.snackBar.open('Password changed successfully!', 'Close', {
             duration: 3000,
             panelClass: ['success-snackbar']
           });
           this.passwordForm.reset();
-
-
-
           this.passwordForm.markAsUntouched();
           this.passwordForm.markAsPristine();
           // Reset form control state manually (this will fix the red error borders)
@@ -201,15 +157,12 @@ export class ProfileComponent {
 
         //moved to ngrx
         catchError((error) => {
-          // console.log(error.toString());
           if (error.toString().includes("weak-password")) {
-            // console.log("In weak password");
             this.snackBar.open('Failed to change password. New Password must be at least 6 characters long', 'Close', {
               duration: 3000,
               panelClass: ['error-snackbar']
             });
           } else if (error.toString().includes("invalid-credential")) {
-            //  console.log("In invalid cred");
             this.snackBar.open('Failed to change password. Current password does not match the one you entered', 'Close', {
               duration: 3000,
               panelClass: ['error-snackbar']
@@ -217,31 +170,15 @@ export class ProfileComponent {
           }
           return EMPTY;
         })
-
-
       ).subscribe()
-
-
-
   }
 
-
   deleteUser(): void {
-
     if (!this.deleteForm.valid) {
       return;
     }
-
     const email = this.deleteForm.get('email')?.value;
     const password = this.deleteForm.get('password')?.value;
-
-
-    // if (!(email && password)) {
-    //   return;
-    // }
-
-    // this.store.dispatch(deleteAccount({ deleteForm: this.deleteForm }));
-
     this.authService.deleteUser(email, password)
       .pipe(
 
@@ -259,7 +196,6 @@ export class ProfileComponent {
         catchError(error => {
 
           if (error.toString().includes("wrong-password")) {
-            // console.log("Wrong password");
             this.snackBar.open('Failed to delete user. The password you entered is incorrect', 'Close', {
               duration: 3000,
               panelClass: ['error-snackbar']
@@ -279,8 +215,5 @@ export class ProfileComponent {
 
 
       ).subscribe()
-
   }
-
-
 }

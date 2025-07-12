@@ -40,11 +40,8 @@ export abstract class ChartService {
     this.timeoutLimit = Constants.get("timeoutLimit");
   }
 
-  updateChart<TType extends DataPointModel>(chart: Chart, data: TType[]): void { // used to be any[]
-    // console.log(`Data inside updateChart: ${JSON.stringify(data)}`)
-
+  updateChart<TType extends DataPointModel>(chart: Chart, data: TType[]): void {
     if (data === undefined || data.length < 1) {
-      // console.error('Data is undefined inside updateChart')
       return;
     }
     const keys = Object.keys(data[0])
@@ -54,10 +51,10 @@ export abstract class ChartService {
     }
 
     if (chart && data.length > 0) {
-      data.forEach((reading: TType) => { // used to be any
-
+      data.forEach((reading: TType) => {
         const uptime = reading.uptime;
         const sensorInfo = reading[this.chartType];
+
         // Update chart with new data
         if (chart !== null && chart.data.labels !== undefined) {
           chart.data.labels.push(uptime);
@@ -70,7 +67,6 @@ export abstract class ChartService {
           }
           chart.update();
         }
-
       });
     }
   }
@@ -80,16 +76,13 @@ export abstract class ChartService {
       from(get(query(ref(this.db, Constants.get(this.dbStoreName)), orderByKey(), limitToLast(limit + 2)))),
       this.timeoutLimit // Timeout after n seconds
     ).pipe(
-
       map((data) => {
-        // console.log(`Data in fetchHistorical = ${data}`);
         if (data === undefined || data === null) {
           return [];
         }
         const readings: DataPointModel[] = Object.values(data.val());
         return readings.slice(0, -2)
       }),
-
       catchError((err) => {
         console.error(`Error when fetching voltage values from firebase: ${err.message}`);
         return this.indexedDBService.getLast_N_ReadingsExcludingLastTwo(limit, this.chartType);
@@ -97,46 +90,6 @@ export abstract class ChartService {
     )
 
   }
-
-  // OLD BUT SHIT - works though
-
-  // generateData(): Observable<void> {
-  //   //generate random values and upload them to firebase
-
-  //   return interval(1000).pipe(
-
-  //     concatMap(() => {
-  //       return this.uptimeService.getCounterValue().pipe(
-  //         catchError(() => {
-  //           return this.indexedDBService.getUpTime();
-  //         })
-  //       )
-  //     }
-  //     ),
-  //     //tap(() => console.log("generateData interval is OK")),
-  //     concatMap((currentUptime: number) => {
-  //       let data: DataPointModel = { uptime: 0 };
-  //       data[this.chartType] = 0;
-  //       const randomVoltage = (Math.random() * (coefficientMap.get(this.chartType) ?? 5)).toFixed(2); // Generate a random value for the data point. Default to randint between 0 and 5 if the specified type of chart doesn't exist
-  //       data.uptime = currentUptime;
-  //       data[this.chartType] = parseFloat(randomVoltage);
-
-  //       const storeName = Constants.get(this.dbStoreName);
-  //       return fetchWithTimeout(
-  //         from(set(ref(this.db, `${storeName}/` + data.uptime), data)).pipe(
-  //           catchError(() => {
-  //             return this.indexedDBService.addReading(data);
-  //           })
-  //         ),
-  //         this.timeoutLimit // Timeout after n seconds
-  //       )
-  //       // return this.saveData(data, storeName);
-  //     })
-  //   )
-  // }
-
-  // 3/21/2025 TODO ASK MENTOR 
-
 
   generateData(): Observable<DataPointModel> {
     return interval(1000).pipe(
@@ -149,67 +102,48 @@ export abstract class ChartService {
       }
       ),
       concatMap((currentUptime) => {
-
         let data: DataPointModel = { uptime: 0 };
         data[this.chartType] = 0;
         const randomVoltage = (Math.random() * (coefficientMap.get(this.chartType) ?? 5)).toFixed(2); // Generate a random value for the data point. Default to randint between 0 and 5 if the specified type of chart doesn't exist
         data.uptime = currentUptime;
         data[this.chartType] = parseFloat(randomVoltage);
-        console.log("generateData() is working...", JSON.stringify(data));
         return of(data);
       })
-
     )
   }
 
   saveData(dataPoint: DataPointModel): Observable<boolean> {
-
-
     return fetchWithTimeout(
       from(set(ref(this.db, `${Constants.get(this.dbStoreName)}/` + dataPoint.uptime), dataPoint)),
       this.timeoutLimit // Timeout after n seconds
     ).pipe(
       catchError(() => {
-        console.log("Writing to INDEXEDDB")
         return this.indexedDBService.addReading(dataPoint);
       })
     )
-
   }
 
   listenForUpdates(): Observable<DataPointModel[]> {
     //fetch from firebase and return!
     return interval(1000).pipe(
-
       concatMap(() => {
-
         return fetchWithTimeout(
           from(get(query(ref(this.db, Constants.get(this.dbStoreName)), orderByKey(), limitToLast(1)))),
           this.timeoutLimit
         ).pipe(
           map((data) => {
-            console.log(`data in listenForVoltageUpdates() = ${data}`)
             if (data === undefined || data === null || data.val() === null) {
-              //console.error("Undefined voltage data here");
               return [];
             }
             return Object.values(data.val()) as DataPointModel[];
           }),
-
           catchError(() => {
-            console.log("ListenForUpdates is Fetching from INDEXEDDB")
             return this.indexedDBService.getLast_N_ReadingsExcludingLastTwo(1, this.chartType);
           })
-
         )
-
       })
-
     )
-
   }
-
-
 
   private _downloadData(data: DataPointModel[]): void {
     const jsonData = JSON.stringify(data);
@@ -224,38 +158,25 @@ export abstract class ChartService {
 
 
   downloadData(): Observable<void> {
-
     return fetchWithTimeout(
       from(get(ref(this.db, Constants.get(this.dbStoreName)))),
       this.timeoutLimit
     ).pipe(
-
       debounceTime(1200),
-
-
       map((data) => {
         this._downloadData(Object.values(data.val()));
       }),
-
       catchError((err) => {
-
         console.error(`Error when fetching ${this.chartType} from firebase: ${err.message}`);
-
         return this.indexedDBService.getAllReadings(this.chartType).pipe(
-
           debounceTime(1200),
-
-
           map((data) => {
             this._downloadData(data)
           })
         )
-
       })
     )
   }
-
-
 
   deleteAllReadings(): Observable<boolean> {
     return merge(
@@ -263,6 +184,4 @@ export abstract class ChartService {
       this.indexedDBService.clearReadings(this.chartType)
     )
   }
-
-
 }

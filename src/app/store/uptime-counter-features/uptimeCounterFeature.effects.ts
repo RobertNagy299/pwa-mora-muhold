@@ -11,44 +11,38 @@ import { selectUptime } from "./uptimeCounterFeature.selectors";
 @Injectable()
 export class UptimeEffects {
 
-  constructor(private actions$: Actions, private uptimeService: UptimeService, private store: Store<MyStoreInterface>) {
-
-  }
+  constructor (
+    private actions$: Actions,
+    private uptimeService: UptimeService,
+    private store: Store<MyStoreInterface>) { }
 
   resetUptime$ = createEffect(() => this.actions$.pipe(
     ofType(resetUptime),
     exhaustMap(() => {
       return this.uptimeService.resetCounterValue();
     })
-  ), {dispatch: false});
+  ), { dispatch: false });
 
   loadData$ = createEffect(() => this.actions$.pipe(
     ofType(loadUptime.type),
     exhaustMap(() => this.uptimeService.getCounterValue()
       .pipe(
-        // map((uptime) => ({type: `${loadUptime.type} Success`, payload: uptime})),
         catchError(() => of(-1))
       )
     ),
     map(uptime => {
-
       if (uptime <= 0) {
         return setUptime({ newValue: 1 });
       }
-      return setUptime({ newValue: uptime })
+      return setUptime({ newValue: uptime });
     })
-  ))
-
-
+  ));
 
   startIncrementing$ = createEffect(() => this.actions$.pipe(
     ofType(startIncrementing.type),
     combineLatestWith(this.store.select(selectUptime)), // Get latest value once
-    //  tap(([_, uptime]) => console.log("after withLatestFrom = ", uptime)),
     filter(([_, uptime]) => uptime !== 0), // Prevent if uptime is 0
     exhaustMap(() => interval(1000).pipe(
-
-      //tap(() => console.log("inside interval")),
       map(() => incrementUptime()) // Dispatch an action instead of modifying the store directly
     ))
   ));
@@ -57,9 +51,7 @@ export class UptimeEffects {
     ofType(incrementUptime.type),
     combineLatestWith(this.store.select(selectUptime)),
     exhaustMap(([_, uptime]) => {
-      return this.uptimeService.saveCounterValue(uptime)
+      return this.uptimeService.saveCounterValue(uptime);
     })
-  ), { dispatch: false })
-
-
+  ), { dispatch: false });
 }

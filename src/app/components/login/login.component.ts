@@ -27,14 +27,13 @@ import { login } from '../../store/user-auth-features/userAuthFeature.actions';
   styleUrls: ['./login.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LoginComponent  {
-  
+export class LoginComponent {
+
   protected loginForm: FormGroup;
 
   constructor(
     private readonly fb: FormBuilder,
     private readonly store: Store<MyStoreInterface>,
-
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -42,20 +41,10 @@ export class LoginComponent  {
     });
   }
 
-
-
   onSubmit() {
-
-    
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-      console.log("VALID LOGIN FORM");
-      this.store.dispatch(login({email, password}));
-    
-
+      this.store.dispatch(login({ email, password }));
     }
   }
-
-
 }
-

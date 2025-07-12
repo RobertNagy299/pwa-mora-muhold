@@ -9,8 +9,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ChartTypeEnum, Constants } from '../../utils/constants';
 import { GradientTextDirective } from '../../directives/gradient-text.directive';
 
-import {Chart} from 'chart.js/auto';
-import { LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement,LineController, PointElement, ArcElement } from 'chart.js';
+import { Chart } from 'chart.js/auto';
+import { LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, LineController, PointElement, ArcElement } from 'chart.js';
 import { ChartFactory } from '../../utils/ChartFactory/CustomChartFactory';
 import { DataPointModel } from '../../services/chart-service';
 
@@ -34,7 +34,7 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
 
   private chart!: Chart;
   private clickSubject: Subject<void> = new Subject<void>()
-  
+
   constructor(
     protected authService: AuthService,
     private temperatureChartService: TemperatureFirebaseService,
@@ -44,18 +44,13 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
     Chart.register(LinearScale, CategoryScale, Title, Tooltip, Legend, LineElement, PointElement, ArcElement, LineController)
   }
 
-
   ngOnInit(): void {
     const canvas = this.el.nativeElement.querySelector('#realtimeTemperatureChart');
     this.chart = this.chartFactory.createChart(canvas, ChartTypeEnum.TEMPERATURE);
 
- 
     // Fetch historical data and update the chart
-
-
     this.clickSubject.pipe(
       debounceTime(1200),
-
       switchMap(() => {
         return this.temperatureChartService.downloadData()
       })
@@ -63,37 +58,26 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
 
     this.temperatureChartService.fetchHistoricalData(Constants.get('dataLimit'))
       .pipe(
-
         filter((data) => data !== undefined),
-
         tap((data: DataPointModel[]) => {
-          //console.log("data fetched historically =  " + data)
           this.temperatureChartService.updateChart(this.chart, data);
         })
       ).subscribe()
 
     // Listen for voltage updates and update the chart
-
     this.temperatureChartService.generateData().pipe(untilDestroyed(this)).subscribe()
 
     this.temperatureChartService.listenForUpdates()
       .pipe(
-        //tap((data) => console.log(`inside listenForTempUpdates in the component. Data = ${data} `)),
-
         filter((data) => data !== undefined),
-
         tap((data) => {
           this.temperatureChartService.updateChart(this.chart, data);
         }),
-
         untilDestroyed(this),
       ).subscribe()
-
-
   }
+
   // Method to trigger download for logged-in users
-
-
   downloadTemperatureData(): void {
     this.clickSubject.next();
   }
@@ -103,5 +87,4 @@ export class TemperatureChartComponent implements OnInit, OnDestroy {
     this.chart.clear();
     this.chart.destroy();
   }
-
 }

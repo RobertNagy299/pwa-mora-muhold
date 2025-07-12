@@ -1,7 +1,6 @@
-import {Component} from '@angular/core';
+import { Component } from '@angular/core';
+import { MainComponent } from './components/main/main.component';
 import { SplashScreenComponent } from "./components/splash-screen/splash-screen.component";
-import {MainComponent} from './components/main/main.component';
-
 
 @Component({
   selector: 'app-root',
@@ -10,8 +9,6 @@ import {MainComponent} from './components/main/main.component';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent    {
+export class AppComponent {
   title = 'Mora Satellite';
-  
- 
 }

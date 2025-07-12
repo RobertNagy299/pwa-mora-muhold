@@ -19,38 +19,26 @@ export class AuthGuard implements CanActivate {
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
     return this.authService.authStateFromStore$.pipe(
-      tap(userAuthState => console.log("AuthGuard: Received user state:", userAuthState)),
-
       filter((userAuthState) => userAuthState !== AuthStatesEnum.UNKNOWN),
       take(1), // Take the first value
       switchMap(userAuthState => {
-
-        console.log(`in AuthGuard, route.url[0].path = ${route.url[0].path}`);
-
         switch (userAuthState) {
           case AuthStatesEnum.AUTHENTICATED: {
-
             if (pagesThatALoggedInUserShouldNotAccess.has(`/${route.url[0].path}`)) {
               this.router.navigate(['/home']);
               return of(false);
-                  
             }
-            
             return of(true);
-            
-          } 
+          }
           case AuthStatesEnum.UNAUTHENTICATED: {
             if (pagesThatAGuestShouldNotAccess.has(`/${route.url[0].path}`)) {
-              
-              this.router.navigate(['/login', {redirect: '/profile'}]);
+              this.router.navigate(['/login', { redirect: '/profile' }]);
               this.routingRedirectService.routeToRedirectToAfterLogin.set('/profile')
               return of(false);
-              
             }
             return of(true);
           }
         }
-
       })
     );
   }

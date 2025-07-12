@@ -9,8 +9,10 @@ import { MyStoreInterface } from '../store/app.store';
 import { initializeAuthStateListener, logout } from '../store/user-auth-features/userAuthFeature.actions';
 import { selectCurrentLoginStatus, selectCurrentUser, selectCurrentUserAuthState, selectUserAuthObj } from '../store/user-auth-features/userAuthFeature.selector';
 import { AuthStatesEnum } from '../utils/constants';
-import { Auth, EmailAuthProvider, reauthenticateWithCredential, updatePassword, 
-   deleteUser as authDeleteUser, createUserWithEmailAndPassword, signOut, signInWithEmailAndPassword, user, User as FirebaseUser } from '@angular/fire/auth';
+import {
+  Auth, EmailAuthProvider, reauthenticateWithCredential, updatePassword,
+  deleteUser as authDeleteUser, createUserWithEmailAndPassword, signOut, signInWithEmailAndPassword, user, User as FirebaseUser
+} from '@angular/fire/auth';
 import { doc, deleteDoc, Firestore, setDoc, getDoc } from '@angular/fire/firestore';
 import { RoutingRedirectService } from './routing-redirect.service';
 import { Router } from '@angular/router';
@@ -56,11 +58,6 @@ export class AuthService {
     this.currentUserFromStore$ = this.store.pipe(select(selectCurrentUser), shareReplay(1));
     this.isLoggedInFromStore$ = this.store.pipe(select(selectCurrentLoginStatus), shareReplay(1));
     this.authStateFromStore$ = this.store.pipe(select(selectCurrentUserAuthState), shareReplay(1));
-
-    // this.currentUserFromStore$.subscribe((data) => {
-    //   console.log("New current User From Store inside authService: ", JSON.stringify(data))
-    // })
-    // this.initializeAuthStateListener().subscribe();
   }
 
 
@@ -68,66 +65,32 @@ export class AuthService {
   // NEW
   public init(): void {
     this.store.dispatch(initializeAuthStateListener());
-    // this.store.pipe(select(selectUserAuthObj)).subscribe((data) => {
-    //   console.log('Auth State object inside  authService. init()', JSON.stringify(data))
-    // })
-
   }
 
 
   // MOVED TO EFFECT - WORKS
   public initializeAuthStateListener(): Observable<User | null> {
-    console.log("AuthService: Initializing auth state listener...");
-
     return user(this.auth) //Working version used user(this.auth) // Emits when auth state changes
       .pipe(
-        tap((firebaseUser) => {
-          console.log("AuthService: Firebase auth state changed:", firebaseUser);
-
-        }), // Emit auth state
-
         switchMap((firebaseUser: FirebaseUser | null) => {
           if (!firebaseUser) {
-            console.log("AuthService: No user, emitting null");
             return of(null); // If no user, emit null immediately
           }
 
           const userDocRef = doc(this.firestore, 'users', firebaseUser.uid);
           return from(getDoc(userDocRef)).pipe(
-            tap((userDoc) => console.log("AuthService: User document fetched:", userDoc.exists() ? userDoc.data() : "not found")),
             filter(userDoc => userDoc.exists()),
             map((userDoc) => userDoc.data() as User),
             catchError((err) => {
               console.error("AuthService: Firestore error", err);
-             // this.authStateSubject.next(AuthStatesEnum.UNAUTHENTICATED);
               return EMPTY;
             })
           );
         }),
-
-        // switchMap((userData: User | null) => {
-
-        // //   console.log("AuthService: Final userData emission:", userData);
-
-        // //  // this.currentUserSubject.next(userData);
-
-        // //   if (userData === null) {
-        // //    // this.authStateSubject.next(AuthStatesEnum.UNAUTHENTICATED);
-        // //    return of(null)
-        // //   }
-        // //   else {
-        // //     this.authStateSubject.next(AuthStatesEnum.AUTHENTICATED);
-        // //   }
-
-
-        //   return of(userData);
-        // })
       )
 
   }
 
-
-  // CHANGED TO NGRX - UNTESTED
 
   changePassword(currentPassword: string, newPassword: string): Observable<void> {
     const user = this.auth.currentUser;
@@ -142,41 +105,28 @@ export class AuthService {
   }
 
   // MOVED TO NGRX STORE EFFECT - WORKS
-
-  login(email : string, password: string): Observable<User> {
+  login(email: string, password: string): Observable<User> {
     return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
       switchMap((userCredentials) => {
         const userDocRef = doc(this.firestore, 'users', userCredentials.user.uid);
         return from(getDoc(userDocRef)).pipe(
-          tap((userDoc) => console.log("AuthService: User document fetched:", userDoc.exists() ? userDoc.data() : "not found")),
           filter(userDoc => userDoc.exists()),
           map((userDoc) => userDoc.data() as User),
           catchError((err) => {
             console.error("AuthService: Firestore error", err);
-            //this.authStateSubject.next(AuthStatesEnum.UNAUTHENTICATED);
-
             // ERROR IS HANDED IN THE EFFECT - Show a snackbar
             throw new Error("Failed to log in");
           })
         );
       }),
-
-      // tap((userData: User) => {
-      //   this.currentUserSubject.next(userData);
-      //   this.authStateSubject.next(AuthStatesEnum.AUTHENTICATED);
-
-      // })
     );
   }
-
-
 
   // MOVED TO NGRX - WORKS
   logout(): Observable<void> {
     return from(signOut(this.auth));
   }
 
-  // MOVED TO NGRX - UNTESTED
   register(username: string, email: string, password: string): Observable<void> {
     return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
       switchMap(({ user }) => {
@@ -189,10 +139,6 @@ export class AuthService {
       })
     );
   }
-
-
-
-  // MOVED TO NGRX - UNTESTED
 
   deleteUser(email: string, password: string): Observable<void> {
     const user = this.auth.currentUser;
@@ -213,17 +159,15 @@ export class AuthService {
         }),
 
         concatMap(() => {
-          
           return this.logout().pipe(
             tap(() => {
-              return this.router.navigate([ this.routingRedirectService.routeToRedirectToAfterLogOut()]);
+              return this.router.navigate([this.routingRedirectService.routeToRedirectToAfterLogOut()]);
             })
           );
-         
+
         }),
 
       )
     //Error handling is implemented in the profile component in order to properly display snackbars on the UI
   }
-
 }

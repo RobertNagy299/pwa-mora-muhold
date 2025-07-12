@@ -12,7 +12,6 @@ export class ConnectivityService {
     fromEvent(window, 'offline').pipe(map(() => false)),
   ).pipe(
     startWith(navigator.onLine ?? true),
-    //tap(x => console.log('asd', x)),
     distinctUntilChanged(),
     shareReplay(1)
   )
