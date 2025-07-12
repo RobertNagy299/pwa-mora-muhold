@@ -5,7 +5,7 @@ import { VoltageInterface } from "../../interfaces/VoltageInterface";
 import { DataPointModel } from "../../services/chart-service";
 import { VoltageFirebaseService } from "../../services/voltage-firebase.service";
 import { Constants } from "../../utils/constants";
-import { addVoltagePoint, deleteAllVoltageReadingsFromDB, fetchHistoricalVoltageData, setVoltageArray, startGeneratingData, startListeningForVoltageDataChanges, stopGeneratingData, stopListeningForVoltageDataChanges } from "./voltage-feature.actions";
+import { addVoltagePoint, deleteAllVoltageReadingsFromDB, fetchHistoricalVoltageData, setVoltageArray, startGeneratingVoltageData, startListeningForVoltageDataChanges, stopGeneratingVoltageData, stopListeningForVoltageDataChanges } from "./voltage-feature.actions";
 
 @Injectable()
 export class VoltageEffects {
@@ -34,13 +34,13 @@ export class VoltageEffects {
   ), { dispatch: false });
 
   initializeVoltageGeneration$ = createEffect(() => this.actions$.pipe(
-    ofType(startGeneratingData),
+    ofType(startGeneratingVoltageData),
     exhaustMap(() => {
       return this.voltageService.generateData().pipe(
         concatMap((data) => {
           return this.voltageService.saveData(data);
         }),
-        takeUntil(this.actions$.pipe(ofType(stopGeneratingData)))
+        takeUntil(this.actions$.pipe(ofType(stopGeneratingVoltageData)))
       );
     })
   ), { dispatch: false });

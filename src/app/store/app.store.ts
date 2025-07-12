@@ -1,3 +1,4 @@
+import { TemperatureState } from "./temperature-features/temperature-feature.state";
 import { UptimeState } from "./uptime-counter-features/uptimeCounterFeature.state";
 import { UserAuthState } from "./user-auth-features/userAuthFeature.state";
 import { VoltageState } from "./voltage-features/voltage-feature.state";
@@ -7,5 +8,5 @@ export interface MyStoreInterface {
     uptimeState: UptimeState,
     userAuthState: UserAuthState,
     voltageState: VoltageState,
-    
+    temperatureState: TemperatureState,    
 }

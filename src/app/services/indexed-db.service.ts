@@ -153,7 +153,6 @@ export class IndexedDBService {
 
 
   getLast_N_ReadingsExcludingLastTwo(limit: number, type: ChartTypeEnum) : Observable<DataPointModel[]> {
-
     return this.dbObservable$
     .pipe(
       switchMap((myDb) => {

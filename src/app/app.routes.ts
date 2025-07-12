@@ -11,12 +11,12 @@ export const routes: Routes = [
   },
   {
     path: "voltage",
-    loadComponent: () => import("./components/voltage-chart/voltage-chart.component").then(component => component.VoltageChartComponent),
+    loadComponent: () => import("./components/chart-loader/chart-loader.component").then(component => component.ChartLoaderComponent),
     title: "Voltage Chart",
   },
   {
     path: "temperature",
-    loadComponent: () => import("./components/temperature-chart/temperature-chart.component").then(component => component.TemperatureChartComponent),
+    loadComponent: () => import("./components/chart-loader/chart-loader.component").then(component => component.ChartLoaderComponent),
     title: "Temperature Chart",
   },
   {

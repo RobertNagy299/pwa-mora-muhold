@@ -19,7 +19,7 @@ const coefficientMap: Map<string, number> = new Map<string, number>(
     ["voltage", 5],
     ["temperature", 40],
   ]
-)
+);
 
 export abstract class ChartService {
 
@@ -34,7 +34,7 @@ export abstract class ChartService {
 
   readonly chartType: ChartTypeEnum;
 
-  constructor(type: ChartTypeEnum) {
+  constructor (type: ChartTypeEnum) {
     this.chartType = type;
     this.dbStoreName = `${this.chartType}ObjectStoreName`;
     this.timeoutLimit = Constants.get("timeoutLimit");
@@ -44,9 +44,9 @@ export abstract class ChartService {
     if (data === undefined || data.length < 1) {
       return;
     }
-    const keys = Object.keys(data[0])
+    const keys = Object.keys(data[0]);
     if (keys.length !== 2) {
-      console.error(`Chart data point object must have exactly two (2) keys! Currently, it has ${keys.length}: ${keys}`)
+      console.error(`Chart data point object must have exactly two (2) keys! Currently, it has ${keys.length}: ${keys}`);
       return;
     }
 
@@ -60,10 +60,10 @@ export abstract class ChartService {
           chart.data.labels.push(uptime);
           chart.data.datasets[0].data.push(sensorInfo);
           if (chart.data.datasets[0].data.length > 30) {
-            chart.data.datasets[0].data.shift()
+            chart.data.datasets[0].data.shift();
           }
           if (chart.data.labels.length > 30) {
-            chart.data.labels.shift()
+            chart.data.labels.shift();
           }
           chart.update();
         }
@@ -81,13 +81,13 @@ export abstract class ChartService {
           return [];
         }
         const readings: DataPointModel[] = Object.values(data.val());
-        return readings.slice(0, -2)
+        return readings.slice(0, -2);
       }),
       catchError((err) => {
         console.error(`Error when fetching voltage values from firebase: ${err.message}`);
         return this.indexedDBService.getLast_N_ReadingsExcludingLastTwo(limit, this.chartType);
       })
-    )
+    );
 
   }
 
@@ -98,7 +98,7 @@ export abstract class ChartService {
           catchError(() => {
             return this.indexedDBService.getUpTime();
           })
-        )
+        );
       }
       ),
       concatMap((currentUptime) => {
@@ -109,7 +109,7 @@ export abstract class ChartService {
         data[this.chartType] = parseFloat(randomVoltage);
         return of(data);
       })
-    )
+    );
   }
 
   saveData(dataPoint: DataPointModel): Observable<boolean> {
@@ -120,7 +120,7 @@ export abstract class ChartService {
       catchError(() => {
         return this.indexedDBService.addReading(dataPoint);
       })
-    )
+    );
   }
 
   listenForUpdates(): Observable<DataPointModel[]> {
@@ -140,9 +140,9 @@ export abstract class ChartService {
           catchError(() => {
             return this.indexedDBService.getLast_N_ReadingsExcludingLastTwo(1, this.chartType);
           })
-        )
+        );
       })
-    )
+    );
   }
 
   private _downloadData(data: DataPointModel[]): void {
@@ -171,17 +171,17 @@ export abstract class ChartService {
         return this.indexedDBService.getAllReadings(this.chartType).pipe(
           debounceTime(1200),
           map((data) => {
-            this._downloadData(data)
+            this._downloadData(data);
           })
-        )
+        );
       })
-    )
+    );
   }
 
   deleteAllReadings(): Observable<boolean> {
     return merge(
       fetchWithTimeout(from(remove(ref(this.db, Constants.get(this.dbStoreName)))), this.timeoutLimit * 2),
       this.indexedDBService.clearReadings(this.chartType)
-    )
+    );
   }
 }

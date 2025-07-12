@@ -1,5 +1,4 @@
 import { createAction, props } from "@ngrx/store";
-import { DataPointModel } from "../../services/chart-service";
 import { VoltageInterface } from "../../interfaces/VoltageInterface";
 
 export const fetchHistoricalVoltageData = createAction(
@@ -16,12 +15,12 @@ export const addVoltagePoint = createAction(
   props<{data: VoltageInterface[]}>()
 )
 
-export const startGeneratingData = createAction(
+export const startGeneratingVoltageData = createAction(
   '[Voltage] Start Generating Data',
 
 )
 
-export const stopGeneratingData = createAction(
+export const stopGeneratingVoltageData = createAction(
   '[Voltage] Stop Generating Data'
 )
 
