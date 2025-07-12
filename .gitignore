@@ -19,8 +19,9 @@ yarn-error.log
 *.launch
 .settings/
 *.sublime-workspace
-/src/environments/environments.ts
-/src/environments/environments.prod.ts
+# .gitignore
+/src/environments/*
+
 # Visual Studio Code
 .vscode/*
 !.vscode/settings.json
