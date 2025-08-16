@@ -1,5 +1,7 @@
 # MoraMuhold - Móra Satellite
 
+Check out the app [here](https://szte-satellite.firebaseapp.com/home)
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.11.
 
 This project is a part of the Space Program of the University of Szeged, Hungary. At the Móra Ferenc Student Dormitory for Advanced Studies, a few students were working on a satellite in the school year of 2024/25. Our goal was to collect scientific data through various sensors and send them back to Earth for deeper study. This app would visualize the data received from the satellite; however, as of August 2025, the construction of the satellite is still in progress. In the meantime, the data is simulated on the client-side from within the Angular app, making it a proof of concept or simulation instead of a real satellite dashboard.
