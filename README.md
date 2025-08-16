@@ -4,6 +4,10 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 This project is a part of the Space Program of the University of Szeged, Hungary. At the Móra Ferenc Student Dormitory for Advanced Studies, a few students were working on a satellite in the school year of 2024/25. Our goal was to collect scientific data through various sensors and send them back to Earth for deeper study. This app would visualize the data received from the satellite; however, as of August 2025, the construction of the satellite is still in progress. In the meantime, the data is simulated on the client-side from within the Angular app, making it a proof of concept or simulation instead of a real satellite dashboard.
 
+## What I learned
+
+This project helped me to learn the fundamentals of <b>NGRX and RXJS</b>. (Client-side state management and reactive programming - learning to use Observables and Pipe factories (fluent pattern) instead of Promises and callback-chains)
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
