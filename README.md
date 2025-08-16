@@ -1,6 +1,6 @@
 # MoraMuhold - Móra Satellite
 
-Check out the app [here](https://szte-satellite.firebaseapp.com/home)
+Check out the app [here](https://szte-satellite.web.app/home)
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.11.
 
