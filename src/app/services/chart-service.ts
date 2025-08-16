@@ -2,12 +2,12 @@ import { Chart } from "chart.js";
 import { ChartTypeEnum, Constants } from "../utils/constants";
 import { fetchWithTimeout } from "../utils/fetchWithTimeout";
 
-import { Database, ref, set, get, query, orderByKey, limitToLast, remove } from '@angular/fire/database';
-import { catchError, concatMap, debounceTime, from, interval, map, merge, mergeMap, Observable, of, switchMap, tap } from 'rxjs';
-import { IndexedDBService } from './indexed-db.service';
 import { inject } from "@angular/core";
-import { UptimeService } from "./uptime.service";
+import { Database, get, limitToLast, orderByKey, query, ref, remove, set } from '@angular/fire/database';
+import { catchError, concatMap, debounceTime, from, interval, map, merge, Observable, of } from 'rxjs';
 import { ConnectivityService } from "./connectivity.service";
+import { IndexedDBService } from './indexed-db.service';
+import { UptimeService } from "./uptime.service";
 
 export interface DataPointModel {
   uptime: number,

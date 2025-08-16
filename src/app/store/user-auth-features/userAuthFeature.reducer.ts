@@ -1,6 +1,6 @@
 import { createReducer, on } from "@ngrx/store";
-import { initialUserAuthState } from "./userAuthFeature.state";
 import { setUserAuthState } from "./userAuthFeature.actions";
+import { initialUserAuthState } from "./userAuthFeature.state";
 
 export const userAuthReducer = createReducer(
   initialUserAuthState,

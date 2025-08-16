@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { UptimeTransformPipe } from '../../pipes/uptime-transform.pipe';
-import { UntilDestroy } from '@ngneat/until-destroy';
-import { AuthService } from '../../services/auth.service';
 import { AsyncPipe, NgIf } from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { UntilDestroy } from '@ngneat/until-destroy';
 import { GradientTextDirective } from '../../directives/gradient-text.directive';
+import { UptimeTransformPipe } from '../../pipes/uptime-transform.pipe';
+import { AuthService } from '../../services/auth.service';
 import { UptimeService } from '../../services/uptime.service';
 
 @UntilDestroy()

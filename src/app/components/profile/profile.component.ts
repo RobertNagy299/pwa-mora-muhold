@@ -1,24 +1,24 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { AsyncPipe, NgIf } from '@angular/common';
-import { MatButton } from '@angular/material/button';
-import { MatInput } from '@angular/material/input';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButton } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardTitle } from '@angular/material/card';
+import { MatDivider } from '@angular/material/divider';
+import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { UntilDestroy } from '@ngneat/until-destroy';
+import { Store } from '@ngrx/store';
+import { catchError, combineLatest, debounceTime, EMPTY, map, merge, Observable, of, startWith, tap } from 'rxjs';
+import { ProfilePageData } from '../../interfaces/profile-page-data';
+import { AuthService } from '../../services/auth.service';
+import { ConnectivityService } from '../../services/connectivity.service';
 import { TemperatureFirebaseService } from '../../services/temperature-firebase.service';
 import { VoltageFirebaseService } from '../../services/voltage-firebase.service';
-import { MatDivider } from '@angular/material/divider';
-import { catchError, combineLatest, debounceTime, EMPTY, map, merge, Observable, of, startWith, tap } from 'rxjs';
-import { MatIcon } from '@angular/material/icon';
-import { UntilDestroy } from '@ngneat/until-destroy';
-import { Router } from '@angular/router';
-import { ConnectivityService } from '../../services/connectivity.service';
-import { Store } from '@ngrx/store';
 import { MyStoreInterface } from '../../store/app.store';
 import { resetUptime } from '../../store/uptime-counter-features/uptimeCounterFeature.actions';
-import { AuthService } from '../../services/auth.service';
-import { ProfilePageData } from '../../interfaces/profile-page-data';
 
 @UntilDestroy()
 @Component({

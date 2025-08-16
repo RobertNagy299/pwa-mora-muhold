@@ -1,8 +1,8 @@
-import {Component, OnInit, ViewEncapsulation} from '@angular/core';
-import {NgIf, NgStyle} from "@angular/common";
-import {first, tap, timer} from 'rxjs'
-import {Constants } from '../../utils/constants';
+import { NgIf, NgStyle } from "@angular/common";
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { first, tap, timer } from 'rxjs';
 import { ThemeService } from '../../services/theme.service';
+import { Constants } from '../../utils/constants';
 @Component({
   selector: 'app-splash-screen',
   standalone: true,

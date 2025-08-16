@@ -1,6 +1,6 @@
 import { createReducer, on } from "@ngrx/store";
-import { initialVoltageState } from "./voltage-feature.state";
 import { addVoltagePoint, deleteAllVoltageReadingsFromDB, setVoltageArray } from "./voltage-feature.actions";
+import { initialVoltageState } from "./voltage-feature.state";
 
 export const voltageReducer = createReducer(
   initialVoltageState,

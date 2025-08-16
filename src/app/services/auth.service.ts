@@ -1,21 +1,28 @@
 
 
 import { Injectable } from '@angular/core';
-import { catchError, concat, concatMap, EMPTY, filter, from, map, Observable, of, shareReplay, switchMap, tap } from 'rxjs';
-import { User } from '../interfaces/User';
+import {
+  Auth,
+  deleteUser as authDeleteUser, createUserWithEmailAndPassword,
+  EmailAuthProvider,
+  User as FirebaseUser,
+  reauthenticateWithCredential,
+  signInWithEmailAndPassword,
+  signOut,
+  updatePassword,
+  user
+} from '@angular/fire/auth';
+import { deleteDoc, doc, Firestore, getDoc, setDoc } from '@angular/fire/firestore';
+import { Router } from '@angular/router';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { select, Store } from '@ngrx/store';
+import { catchError, concat, concatMap, EMPTY, filter, from, map, Observable, of, shareReplay, switchMap, tap } from 'rxjs';
+import { User } from '../interfaces/User';
 import { MyStoreInterface } from '../store/app.store';
-import { initializeAuthStateListener, logout } from '../store/user-auth-features/userAuthFeature.actions';
-import { selectCurrentLoginStatus, selectCurrentUser, selectCurrentUserAuthState, selectUserAuthObj } from '../store/user-auth-features/userAuthFeature.selector';
+import { initializeAuthStateListener } from '../store/user-auth-features/userAuthFeature.actions';
+import { selectCurrentLoginStatus, selectCurrentUser, selectCurrentUserAuthState } from '../store/user-auth-features/userAuthFeature.selector';
 import { AuthStatesEnum } from '../utils/constants';
-import {
-  Auth, EmailAuthProvider, reauthenticateWithCredential, updatePassword,
-  deleteUser as authDeleteUser, createUserWithEmailAndPassword, signOut, signInWithEmailAndPassword, user, User as FirebaseUser
-} from '@angular/fire/auth';
-import { doc, deleteDoc, Firestore, setDoc, getDoc } from '@angular/fire/firestore';
 import { RoutingRedirectService } from './routing-redirect.service';
-import { Router } from '@angular/router';
 
 @UntilDestroy()
 @Injectable({

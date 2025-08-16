@@ -1,6 +1,6 @@
 import { createReducer, on } from "@ngrx/store";
-import { initialTemperatureState } from "./temperature-feature.state";
 import { addTemperaturePoint, deleteAllTemperatureReadingsFromDB, setTemperatureArray } from "./temperature-feature.actions";
+import { initialTemperatureState } from "./temperature-feature.state";
 
 export const temperatureReducer = createReducer(
   initialTemperatureState,

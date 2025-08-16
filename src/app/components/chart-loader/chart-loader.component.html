@@ -5,5 +5,5 @@
     <p>Chart could not be loaded!</p>
   }
 } @placeholder(minimum 1000ms) {
-  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  <mat-progress-bar [class]="{'temperature-loading-indicator' : isTemp}" mode="indeterminate"></mat-progress-bar>
 }

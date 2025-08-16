@@ -1,4 +1,4 @@
-import {map, Observable, race, throwError, timer } from "rxjs";
+import { map, Observable, race, throwError, timer } from "rxjs";
 
 export function fetchWithTimeout(observable: Observable<any>, timeout: number) : Observable<any> {
   

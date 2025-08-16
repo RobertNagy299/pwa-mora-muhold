@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IDBPDatabase, openDB } from 'idb';
-import { ChartTypeEnum, Constants } from '../utils/constants';
 import { catchError, concat, filter, from, map, Observable, of, shareReplay, switchMap, throwError } from 'rxjs';
-import { VoltageInterface } from '../interfaces/VoltageInterface';
-import { TemperatureInterface } from '../interfaces/TemperatureInterface';
+import { ChartTypeEnum, Constants } from '../utils/constants';
 import { DataPointModel } from './chart-service';
 
 @Injectable({

@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
-import { AuthService } from '../services/auth.service';
 import { Observable, of } from 'rxjs';
-import { filter, switchMap, take, tap } from 'rxjs/operators';
-import { AuthStatesEnum, pagesThatAGuestShouldNotAccess, pagesThatALoggedInUserShouldNotAccess } from '../utils/constants';
+import { filter, switchMap, take } from 'rxjs/operators';
+import { AuthService } from '../services/auth.service';
 import { RoutingRedirectService } from '../services/routing-redirect.service';
+import { AuthStatesEnum, pagesThatAGuestShouldNotAccess, pagesThatALoggedInUserShouldNotAccess } from '../utils/constants';
 
 @Injectable({
   providedIn: 'root'

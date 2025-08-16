@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Input, Renderer2, OnInit } from '@angular/core';
+import { Directive, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
 
 @Directive({
   selector: '[appGradientText]',

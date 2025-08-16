@@ -1,14 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 
-import { Database, ref, set, get, DataSnapshot } from '@angular/fire/database';
-import { catchError, from, map, mergeMap, Observable, of } from 'rxjs';
-import { IndexedDBService } from './indexed-db.service';
-import { fetchWithTimeout } from '../utils/fetchWithTimeout';
-import { Constants } from '../utils/constants';
-import { MyStoreInterface } from '../store/app.store';
+import { Database, DataSnapshot, get, ref, set } from '@angular/fire/database';
 import { select, Store } from '@ngrx/store';
-import { selectUptime } from '../store/uptime-counter-features/uptimeCounterFeature.selectors';
+import { catchError, from, map, mergeMap, Observable, of } from 'rxjs';
+import { MyStoreInterface } from '../store/app.store';
 import { loadUptime, startIncrementing } from '../store/uptime-counter-features/uptimeCounterFeature.actions';
+import { selectUptime } from '../store/uptime-counter-features/uptimeCounterFeature.selectors';
+import { Constants } from '../utils/constants';
+import { fetchWithTimeout } from '../utils/fetchWithTimeout';
+import { IndexedDBService } from './indexed-db.service';
 
 @Injectable({
   providedIn: 'root'

@@ -1,7 +1,7 @@
 import { Chart, ChartConfiguration, ChartData, ChartOptions } from "chart.js";
 
-import { ChartTypeEnum } from "../constants";
 import { Injectable } from "@angular/core";
+import { ChartTypeEnum } from "../constants";
 
 
 

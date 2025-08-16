@@ -3,33 +3,33 @@ import {
   ChangeDetectionStrategy,
   Component, ElementRef,
   OnInit,
-  ViewChild} from '@angular/core';
+  ViewChild
+} from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   MatDrawer,
   MatDrawerContainer,
   MatSidenavModule
 } from '@angular/material/sidenav';
-import {MatToolbar} from '@angular/material/toolbar';
-import {MatSlideToggle} from '@angular/material/slide-toggle';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { MatToolbar } from '@angular/material/toolbar';
 
 
-import { MatListItem, MatNavList} from '@angular/material/list';
-import {MatDivider} from '@angular/material/divider';
-import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
-import { AsyncPipe } from '@angular/common';
-import {MatIcon} from '@angular/material/icon';
-import {MatButton, MatIconButton} from '@angular/material/button';
-import {ThemeService} from '../../services/theme.service';
-import {NgIf} from '@angular/common';
-import {AuthService} from '../../services/auth.service';
-import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
-import { filter, first } from 'rxjs';
-import { RoutingRedirectService } from '../../services/routing-redirect.service';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatDivider } from '@angular/material/divider';
+import { MatIcon } from '@angular/material/icon';
+import { MatListItem, MatNavList } from '@angular/material/list';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Store } from '@ngrx/store';
+import { filter, first } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { RoutingRedirectService } from '../../services/routing-redirect.service';
+import { ThemeService } from '../../services/theme.service';
+import { UptimeService } from '../../services/uptime.service';
 import { MyStoreInterface } from '../../store/app.store';
 import { logout } from '../../store/user-auth-features/userAuthFeature.actions';
-import { UptimeService } from '../../services/uptime.service';
 
 @UntilDestroy()
 @Component({
